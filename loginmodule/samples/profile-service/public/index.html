@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><title>Profile Service - Service B</title>
+    <style>
+        body { font-family: sans-serif; background: #fef1e1; text-align: center; padding: 50px; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: inline-block; }
+        .btn { background: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; text-decoration: none; }
+        .hidden { display: none; }
+        #user-info { margin-top: 20px; color: orange; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Profile Service (Service B)</h1>
+        <p>Another service also using UniLogin (Unil) SSO.</p>
+        
+        <div id="login-section">
+            <a href="http://localhost:5001/api/sso/authorize?redirect_uri=http://localhost:5003/callback" id="login-link" class="btn">Login with UniLogin</a>
+        </div>
+
+        <div id="user-section" class="hidden">
+            <p id="user-info"></p>
+            <button onclick="logout()" class="btn" style="background: #e74c3c;">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+
+        if (code) {
+            // Verify code with backend
+            fetch('/api/verify-sso', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.setItem('profile_user', JSON.stringify(data.data.user));
+                    window.history.replaceState({}, document.title, "/");
+                    showUser(data.data.user);
+                }
+            });
+        }
+
+        const storedUser = localStorage.getItem('profile_user');
+        if (storedUser) showUser(JSON.parse(storedUser));
+
+        function showUser(user) {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('user-section').classList.remove('hidden');
+            document.getElementById('user-info').innerText = `Logged in as: ${user.email}`;
+        }
+
+        function logout() {
+            localStorage.removeItem('profile_user');
+            location.reload();
+        }
+    </script>
+</body>
+</html>

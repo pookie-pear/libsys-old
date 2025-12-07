@@ -1,0 +1,417 @@
+[
+  {
+    "id": "1776160688110",
+    "title": "zero dark thirty",
+    "type": "movie",
+    "genres": [
+      "war",
+      "non-fiction",
+      "history"
+    ],
+    "rating": 8,
+    "review": "its decent to help not think about \"things\" you tryhard not to, has few rare parts that remind but in general decent",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T09:58:08.110Z"
+  },
+  {
+    "id": "1776160688111",
+    "title": "Daredevil,Born Again",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 7,
+    "review": "its decent to help not think about \"things\" you tryhard not to, has few rare parts that remind but in general decent",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180872Z"
+  },
+  {
+    "id": "1776160688112",
+    "title": "Peacemaker",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 8,
+    "review": "doesn't require too much energy to watch, which is perfect right now.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180893Z"
+  },
+  {
+    "id": "1776160688113",
+    "title": "Alien:Earth",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 8,
+    "review": "intense enough to drown out other thoughts. a bit heavy sometimes but mostly fine.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180900Z"
+  },
+  {
+    "id": "1776160688114",
+    "title": "Evangelion",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 9,
+    "review": "keeps the mind occupied. grim enough to fit the mood without being too much.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180905Z"
+  },
+  {
+    "id": "1776160688115",
+    "title": "Attack On Titan",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 8,
+    "review": "good quality escapism. it does edge close to reality sometimes but usually stays in its lane.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180910Z"
+  },
+  {
+    "id": "1776160688116",
+    "title": "Berserk",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 10,
+    "review": "captivating in a weird way. helps pass the time without letting the mind wander.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180914Z"
+  },
+  {
+    "id": "1776160688117",
+    "title": "Cyberpunk Edgerunners",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 9,
+    "review": "captivating in a weird way. helps pass the time without letting the mind wander.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180918Z"
+  },
+  {
+    "id": "1776160688118",
+    "title": "Loki",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 9,
+    "review": "intense enough to drown out other thoughts. a bit heavy sometimes but mostly fine.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180922Z"
+  },
+  {
+    "id": "1776160688119",
+    "title": "Agents Of Shield",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 10,
+    "review": "pretty good for shutting off the brain, dark atmosphere helps.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180926Z"
+  },
+  {
+    "id": "1776160688120",
+    "title": "What If",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 9,
+    "review": "a solid distraction. visceral and engaging, makes you forget the real world for a bit.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180930Z"
+  },
+  {
+    "id": "1776160688121",
+    "title": "Breaking Bad",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 7,
+    "review": "its decent to help not think about \"things\" you tryhard not to, has few rare parts that remind but in general decent",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180934Z"
+  },
+  {
+    "id": "1776160688122",
+    "title": "Better Call Saul",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 7,
+    "review": "a solid distraction. visceral and engaging, makes you forget the real world for a bit.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180939Z"
+  },
+  {
+    "id": "1776160688123",
+    "title": "Star Wars",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 9,
+    "review": "doesn't require too much energy to watch, which is perfect right now.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180943Z"
+  },
+  {
+    "id": "1776160688124",
+    "title": "Mandalorian",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 9,
+    "review": "a solid distraction. visceral and engaging, makes you forget the real world for a bit.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180948Z"
+  },
+  {
+    "id": "1776160688125",
+    "title": "Walking Dead",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 8,
+    "review": "intense enough to drown out other thoughts. a bit heavy sometimes but mostly fine.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180952Z"
+  },
+  {
+    "id": "1776160688126",
+    "title": "Fear The Walking Dead",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 9,
+    "review": "pretty good for shutting off the brain, dark atmosphere helps.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180956Z"
+  },
+  {
+    "id": "1776160688127",
+    "title": "The Last Of Us",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 8,
+    "review": "its decent to help not think about \"things\" you tryhard not to, has few rare parts that remind but in general decent",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180960Z"
+  },
+  {
+    "id": "1776160688128",
+    "title": "Love,Death+Robots",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action",
+      "100/10"
+    ],
+    "rating": 10,
+    "review": "literally speechless",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180964Z",
+    "updatedAt": "2026-04-14T14:54:32.350Z"
+  },
+  {
+    "id": "1776160688129",
+    "title": "Narcos:Mexico",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 7,
+    "review": "intense enough to drown out other thoughts. a bit heavy sometimes but mostly fine.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180968Z"
+  },
+  {
+    "id": "1776160688130",
+    "title": "Watchmen",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 9,
+    "review": "intense enough to drown out other thoughts. a bit heavy sometimes but mostly fine.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180972Z"
+  },
+  {
+    "id": "1776160688131",
+    "title": "Watchmen(Toon)",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 7,
+    "review": "doesn't require too much energy to watch, which is perfect right now.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180976Z"
+  },
+  {
+    "id": "1776160688132",
+    "title": "Arcane",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 8,
+    "review": "captivating in a weird way. helps pass the time without letting the mind wander.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180980Z"
+  },
+  {
+    "id": "1776160688133",
+    "title": "Common Side Effects",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 7,
+    "review": "captivating in a weird way. helps pass the time without letting the mind wander.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180985Z"
+  },
+  {
+    "id": "1776160688134",
+    "title": "Secret Level",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 9,
+    "review": "its decent to help not think about \"things\" you tryhard not to, has few rare parts that remind but in general decent",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180989Z"
+  },
+  {
+    "id": "1776160688135",
+    "title": "Game Of Thrones",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 9,
+    "review": "a solid distraction. visceral and engaging, makes you forget the real world for a bit.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180994Z"
+  },
+  {
+    "id": "1776160688136",
+    "title": "Lord Of The Rings",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 8,
+    "review": "its decent to help not think about \"things\" you tryhard not to, has few rare parts that remind but in general decent",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180998Z"
+  },
+  {
+    "id": "1776160688137",
+    "title": "Chernobyl",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],

@@ -1,0 +1,22 @@
+{
+  "name": "@unil/core",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "description": "A reusable core module for Single Sign-On (SSO) and MERN stack authentication, known as UniLogin (Unil).",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:test": "node test-server.js",
+    "start:inventory": "node samples/inventory-service/server.js",
+    "start:profile": "node samples/profile-service/server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "google-auth-library": "^10.6.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.4.1"
+  }
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "1776163769462",
+    "title": "ert",
+    "author": "ter",
+    "totalCopies": 2,
+    "borrowers": [
+      {
+        "id": "1776163776940",
+        "name": "dfs",
+        "dueDate": "2026-04-15"
+      }
+    ],
+    "createdAt": "2026-04-14T10:49:29.462Z",
+    "updatedAt": "2026-04-14T10:49:36.954Z"
+  }
+]
