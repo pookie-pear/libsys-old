@@ -57,3 +57,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ code: dummyCode })
+            });
+            const verifyData = await verifyResponse.json();
+            logResponse(verifyData, !verifyResponse.ok);
+            
+        } catch (error) {
+            logResponse({ message: 'SSO Simulation failed', error: error.message }, true);
+        }
+    });
+
+    // Register Logic
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('reg-name').value;
+        const email = document.getElementById('reg-email').value;
+        const password = document.getElementById('reg-password').value;
+
+        try {
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password })
+            });
+            const data = await response.json();
+            logResponse(data, !response.ok);
+            if(response.ok) {
+                registerForm.reset();
+                if(data.data.token) {
+                    currentToken = data.data.token;
+                    localStorage.setItem('unilToken', currentToken);
+                }
