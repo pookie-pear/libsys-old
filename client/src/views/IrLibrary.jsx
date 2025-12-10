@@ -24,3 +24,9 @@ const IrLibrary = () => {
   const [dueDate, setDueDate] = useState('');
 
   const fetchBooks = async () => {
+    try {
+      const res = await fetch(API_URL, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
