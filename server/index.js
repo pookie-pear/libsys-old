@@ -56,3 +56,45 @@ const checkDB = (req, res, next) => {
       success: false, 
       message: 'Database connection is lost. Please try again later.' 
     });
+  }
+
+  // If connecting (2), wait a bit or return 503
+  return res.status(503).json({ 
+    success: false, 
+    message: 'Database is still connecting. Please try again in a few seconds.' 
+  });
+};
+
+// Custom Protect Middleware that checks both Authorization header and unil_session cookie
+const protectWithCookie = (secret) => async (req, res, next) => {
+  let token;
+
+  // Log all cookies for debugging SSO
+  // console.log('DEBUG: Incoming Cookies:', req.cookies);
+
+  // Try Header first, but ignore if it's the string 'null'
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    const headerToken = req.headers.authorization.split(' ')[1];
+    if (headerToken && headerToken !== 'null') {
+      token = headerToken;
+    }
+  }
+
+  // If no token from header, try cookies
+  if (!token) {
+    if (req.cookies && req.cookies.unil_session) {
+      token = req.cookies.unil_session;
+    } else if (req.cookies && req.cookies.token) {
+      token = req.cookies.token;
+    }
+  }
+
+  if (!token || token === 'null') {
+    return res.status(401).json({ success: false, message: 'Not authorized, no valid session token' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, secret);
+    req.user = decoded;
+    next();
+  } catch (error) {
