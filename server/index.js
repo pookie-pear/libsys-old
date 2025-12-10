@@ -43,3 +43,16 @@ app.use(cookieParser());
 mongoose.connection.on('connected', () => console.log('Mongoose connected to DB'));
 mongoose.connection.on('error', (err) => console.error('Mongoose connection error:', err));
 mongoose.connection.on('disconnected', () => console.warn('Mongoose disconnected from DB'));
+
+// Database Check Middleware
+const checkDB = (req, res, next) => {
+  if (mongoose.connection.readyState === 1) {
+    return next();
+  }
+  
+  // If disconnected or error, return 503
+  if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 3) {
+    return res.status(503).json({ 
+      success: false, 
+      message: 'Database connection is lost. Please try again later.' 
+    });
