@@ -50,3 +50,48 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
           position: 'absolute',
           top: '12px',
           right: '12px',
+          display: 'flex',
+          gap: '8px',
+          zIndex: 10,
+          opacity: 0,
+          transition: 'all 0.2s',
+        }}>
+        <button 
+          onClick={() => onEdit(item)}
+          style={{
+            background: 'rgba(0, 0, 0, 0.6)',
+            color: 'var(--text-muted)',
+            padding: '8px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+        >
+          <Edit2 size={16} />
+        </button>
+
+        <button 
+          onClick={() => onDelete(item.id)}
+          style={{
+            background: 'rgba(0, 0, 0, 0.6)',
+            color: 'var(--text-muted)',
+            padding: '8px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-rose)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+
+      {/* Image / Video Area */}
+      <div style={{ height: '200px', width: '100%', position: 'relative', backgroundColor: 'var(--bg-dark)' }}>
+        {type === 'youtube' && ytId ? (
+          <iframe
