@@ -98,3 +98,57 @@ const protectWithCookie = (secret) => async (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
+    console.error('JWT Verification Error:', error.message);
+    return res.status(401).json({ success: false, message: 'Not authorized, session expired or invalid' });
+  }
+};
+
+const auth = protectWithCookie(process.env.JWT_SECRET);
+
+// Connect to Database
+const connectToDB = async () => {
+  if (!process.env.MONGO_URI) {
+    console.error('SERVER ERROR: MONGO_URI is not defined in .env');
+    return;
+  }
+
+  try {
+    await connectDB(process.env.MONGO_URI);
+  } catch (err) {
+    console.error('SERVER ERROR: Initial database connection failed.');
+    console.error(`Reason: ${err.message}`);
+    // Retry connection after 5 seconds
+    console.log('Retrying connection in 5 seconds...');
+    setTimeout(connectToDB, 5000);
+  }
+};
+
+connectToDB();
+
+// User Schema & Model
+const userSchema = new mongoose.Schema({
+  name: String,
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true }
+});
+const User = mongoose.model('User', userSchema);
+
+// Helper to read data
+const readData = (file = DATA_FILE) => {
+    try {
+        const data = fs.readFileSync(file, 'utf8');
+        return JSON.parse(data);
+    } catch (err) {
+        console.error('Error reading data file:', err);
+        return [];
+    }
+};
+
+// Helper to write data
+const writeData = (data, file = DATA_FILE) => {
+    try {
+        fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
+    } catch (err) {
+        console.error('Error writing data file:', err);
+    }
+};
