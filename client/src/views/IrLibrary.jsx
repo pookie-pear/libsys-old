@@ -30,3 +30,63 @@ const IrLibrary = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
+      const data = await res.json();
+      setBooks(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBooks();
+  }, []);
+
+  const handleAddBook = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    if (!newTitle.trim() || !newAuthor.trim() || newCopies < 1) return;
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ 
+          title: newTitle, 
+          author: newAuthor,
+          totalCopies: newCopies 
+        })
+      });
+      const data = await res.json();
+      setBooks([...books, data]);
+      setNewTitle('');
+      setNewAuthor('');
+      setNewCopies(1);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    try {
+      await fetch(`${API_URL}/${id}`, { 
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      setBooks(books.filter(b => b.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
