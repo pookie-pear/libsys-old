@@ -152,3 +152,13 @@ const writeData = (data, file = DATA_FILE) => {
         console.error('Error writing data file:', err);
     }
 };
+
+// --- Auth Endpoints ---
+
+app.post('/api/auth/register', checkDB, async (req, res, next) => {
+  const { name, email, password } = req.body;
+  try {
+    const userExists = await User.findOne({ email });
+    if (userExists) return errorResponse(res, 400, 'User already exists');
+
+    const hashedPassword = await hashPassword(password);
