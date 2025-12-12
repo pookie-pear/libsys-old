@@ -25,3 +25,21 @@ const Login = () => {
       } catch (err) {
         console.error('Error checking UniLogin session:', err);
       } finally {
+        setCheckingSession(false);
+      }
+    };
+
+    // 2. Check for SSO redirect code
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    
+    if (code) {
+      const handleSSO = async () => {
+        setLoading(true);
+        const result = await verifySSO(code);
+        if (result.success) {
+          window.history.replaceState({}, document.title, "/login");
+          navigate('/');
+        } else {
+          setError(result.message || 'SSO Login Failed');
+        }
