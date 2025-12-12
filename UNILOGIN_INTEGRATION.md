@@ -48,3 +48,21 @@ The `AuthProvider` handles the global state and session checks.
 
 ### useLibrary Hook
 All data-fetching hooks that require authentication must include `credentials: 'include'`:
+```javascript
+const res = await fetch(API_URL, {
+  method: 'PUT',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(updates),
+  credentials: 'include' // Required for Unil SSO
+});
+```
+
+### Login View
+- Added a branded **"Login with UniLogin"** button.
+- Logic: Clicking the button calls `refreshAuth()`. If a cookie exists, the user is logged in instantly without entering credentials.
+
+## 4. Troubleshooting Checklist for Future Projects
+1. **Mongoose Version**: Ensure the module and server aren't using two different versions of Mongoose.
+2. **CORS**: Must allow `credentials: true` and specify (or dynamically match) the exact origin.
+3. **Cookie Settings**: Ensure `unil_session` cookie is set with `httpOnly: true` and appropriate `sameSite` settings (usually `lax` or `none` for cross-site).
+4. **Header 'null'**: Always sanitize incoming `Authorization` headers to ignore the string `"null"`.

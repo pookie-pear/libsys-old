@@ -87,3 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentToken = data.data.token;
                     localStorage.setItem('unilToken', currentToken);
                 }
+            }
+        } catch (error) {
+            logResponse({ message: 'Network error occurred' }, true);
+        }
+    });
+
