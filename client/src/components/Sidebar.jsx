@@ -27,3 +27,42 @@ const Sidebar = ({ filter, setFilter, onAddClick }) => {
 
   return (
     <aside className="glass-card" style={{ width: '260px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', height: 'fit-content' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ background: 'var(--primary)', padding: '8px', borderRadius: '12px' }}>
+          <Library size={24} color="white" />
+        </div>
+        <h2 style={{ fontSize: '1.5rem', color: 'white' }}>OmniShelf</h2>
+      </div>
+
+      <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = filter === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setFilter(item.id)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 16px',
+                background: isActive ? 'var(--primary)' : 'transparent',
+                color: isActive ? 'white' : 'var(--text-muted)',
+                textAlign: 'left',
+                fontSize: '1rem',
+                fontWeight: isActive ? '600' : '400',
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.05)';
+                  e.target.style.color = 'var(--text-main)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.target.style.background = 'transparent';
+                  e.target.style.color = 'var(--text-muted)';
+                }
+              }}
+            >
