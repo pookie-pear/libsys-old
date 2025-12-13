@@ -162,3 +162,40 @@ app.post('/api/auth/register', checkDB, async (req, res, next) => {
     if (userExists) return errorResponse(res, 400, 'User already exists');
 
     const hashedPassword = await hashPassword(password);
+    const user = await User.create({ name, email, password: hashedPassword });
+
+    const token = generateToken({ id: user._id, email: user.email }, process.env.JWT_SECRET);
+    res.cookie('unil_session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000
+    });
+
+    return successResponse(res, 201, { id: user._id, name: user.name, email: user.email, token }, 'User registered successfully');
+  } catch (error) { next(error); }
+});
+
+app.post('/api/auth/login', checkDB, async (req, res, next) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return errorResponse(res, 401, 'Invalid credentials');
+
+    const isMatch = await comparePassword(password, user.password);
+    if (!isMatch) return errorResponse(res, 401, 'Invalid credentials');
+
+    const token = generateToken({ id: user._id, email: user.email }, process.env.JWT_SECRET);
+    res.cookie('unil_session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000
+    });
+
+    return successResponse(res, 200, { user: { id: user._id, name: user.name, email: user.email }, token }, 'Login Successful');
+  } catch (error) { next(error); }
+});
+
+app.post('/api/auth/verify-sso', checkDB, async (req, res, next) => {
+  const { code } = req.body;

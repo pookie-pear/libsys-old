@@ -32,3 +32,49 @@ app.use(express.static('public')); // Serve the web UI
 app.use((req, res, next) => {
   if (req.path.startsWith('/api') && mongoose.connection.readyState !== 1) {
     return errorResponse(res, 503, 'Database not connected. Please check your MONGO_URI and IP whitelist.');
+  }
+  next();
+});
+
+// 1. Connect to Database (Re-added as requested)
+if (process.env.MONGO_URI) {
+  connectDB(process.env.MONGO_URI).catch(err => {
+    console.error('SERVER WARNING: Database connection failed. Auth routes will not work.');
+    console.error(`Reason: ${err.message}`);
+  });
+} else {
+  console.warn('MONGO_URI not found in .env, DB connection skipped.');
+}
+
+// 2. Simple User Schema for demonstration
+const userSchema = new mongoose.Schema({
+  name: String,
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true }
+});
+const User = mongoose.model('User', userSchema);
+
+// 3. Custom Auth Routes
+/**
+ * Register Route
+ * POST { "name": "...", "email": "...", "password": "..." }
+ */
+app.post('/api/register', async (req, res, next) => {
+  const { name, email, password } = req.body;
+
+  try {
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return errorResponse(res, 400, 'User already exists');
+    }
+
+    const hashedPassword = await hashPassword(password);
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword
+    });
+
+    console.log('DEBUG: User created in DB:', {
+      id: user._id,
+      name: user.name,
