@@ -51,3 +51,76 @@ const AddMediaModal = ({ isOpen, onClose, onSave, initialData }) => {
           }
         }
       } catch (err) {
+        console.error('Failed to fetch YouTube title', err);
+      }
+    }
+  };
+
+  const inputStyle = {
+    width: '100%',
+    padding: '12px',
+    background: 'rgba(15, 23, 42, 0.6)',
+    border: '1px solid var(--glass-border)',
+    borderRadius: '8px',
+    color: 'white',
+    fontSize: '0.95rem',
+    marginBottom: '16px'
+  };
+
+  const labelStyle = {
+    display: 'block',
+    marginBottom: '6px',
+    fontSize: '0.85rem',
+    fontWeight: '600',
+    color: 'var(--text-muted)'
+  };
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0, left: 0, right: 0, bottom: 0,
+      background: 'rgba(0, 0, 0, 0.7)',
+      backdropFilter: 'blur(4px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '20px'
+    }}>
+      <div className="glass-card" style={{
+        width: '100%',
+        maxWidth: '500px',
+        maxHeight: '90vh',
+        overflowY: 'auto',
+        position: 'relative'
+      }}>
+        <div style={{ padding: '24px', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ fontSize: '1.5rem' }}>{initialData ? 'Edit Media' : 'Add to Library'}</h2>
+          <button type="button" onClick={onClose} style={{ background: 'transparent', color: 'var(--text-muted)' }}>
+            <X size={24} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
+          <div>
+            <label style={labelStyle}>Title *</label>
+            <input required type="text" name="title" value={formData.title} onChange={handleChange} style={inputStyle} placeholder="Enter title" />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div>
+              <label style={labelStyle}>Type</label>
+              <select name="type" value={formData.type} onChange={handleChange} style={inputStyle}>
+                <option value="movie">Movie</option>
+                <option value="series">TV Series</option>
+                <option value="book">Book</option>
+                <option value="short">Short Film</option>
+                <option value="youtube">YouTube</option>
+                <option value="game">Game</option>
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Status</label>
+              <select name="category" value={formData.category} onChange={handleChange} style={inputStyle}>
+                <option value="completed">Completed</option>
+                <option value="in_progress">In Progress</option>

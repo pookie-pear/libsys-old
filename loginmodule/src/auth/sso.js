@@ -26,3 +26,27 @@ const exchangeAuthCode = (code, secret) => {
   }
 };
 
+/**
+ * Middleware to facilitate SSO check. 
+ * If user is already logged in (via cookie/token), 
+ * it can automatically redirect to a target URI with an auth code.
+ */
+const ssoRedirect = (secret) => (req, res, next) => {
+  const { redirect_uri } = req.query;
+  
+  // If user is logged in (req.user exists from 'protect' middleware)
+  if (req.user && redirect_uri) {
+    const authCode = generateAuthCode({ id: req.user.id, email: req.user.email }, secret);
+    const targetUrl = new URL(redirect_uri);
+    targetUrl.searchParams.append('code', authCode);
+    return res.redirect(targetUrl.toString());
+  }
+  
+  next();
+};
+
+module.exports = {
+  generateAuthCode,
+  exchangeAuthCode,
+  ssoRedirect,
+};
