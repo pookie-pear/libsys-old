@@ -199,3 +199,59 @@ app.post('/api/auth/login', checkDB, async (req, res, next) => {
 
 app.post('/api/auth/verify-sso', checkDB, async (req, res, next) => {
   const { code } = req.body;
+  try {
+    const userData = exchangeAuthCode(code, process.env.JWT_SECRET);
+    
+    // Find or create user in our local database
+    let user = await User.findOne({ email: userData.email });
+    if (!user) {
+      // Create a random password since they logged in via SSO
+      const randomPassword = Math.random().toString(36).slice(-8);
+      const hashedPassword = await hashPassword(randomPassword);
+      user = await User.create({
+        name: userData.name || userData.email.split('@')[0],
+        email: userData.email,
+        password: hashedPassword
+      });
+    }
+
+    const token = generateToken({ id: user._id, email: user.email }, process.env.JWT_SECRET);
+    res.cookie('unil_session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000
+    });
+
+    return successResponse(res, 200, { user: { id: user._id, name: user.name, email: user.email }, token }, 'SSO Login Successful');
+  } catch (error) {
+    return errorResponse(res, 401, 'SSO Verification Failed');
+  }
+});
+
+app.get('/api/auth/me', [checkDB, auth], async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password');
+        if (!user) return errorResponse(res, 404, 'User not found');
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+app.post('/api/auth/logout', (req, res) => {
+  res.clearCookie('unil_session');
+  return successResponse(res, 200, null, 'Logged out successfully');
+});
+
+// --- Protected API Endpoints ---
+// Already defined above as 'auth'
+
+app.get('/api/media', (req, res) => {
+    const data = readData();
+    res.json(data);
+});
+
+app.post('/api/media', auth, (req, res) => {
+    const data = readData();
+    const newItem = {

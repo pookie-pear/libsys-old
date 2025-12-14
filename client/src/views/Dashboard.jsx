@@ -39,3 +39,10 @@ const Dashboard = () => {
     setEditingItem(null);
     setIsModalOpen(true);
   };
+
+  const handleEditClick = (item) => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    setEditingItem(item);

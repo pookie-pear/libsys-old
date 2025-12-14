@@ -124,3 +124,57 @@ const AddMediaModal = ({ isOpen, onClose, onSave, initialData }) => {
               <select name="category" value={formData.category} onChange={handleChange} style={inputStyle}>
                 <option value="completed">Completed</option>
                 <option value="in_progress">In Progress</option>
+                <option value="wishlist">Wishlist</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+             <label style={labelStyle}>Rating (Personal)</label>
+             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
+                 <Star
+                   key={star}
+                   size={24}
+                   onClick={() => setFormData({ ...formData, rating: star })}
+                   onMouseEnter={() => setHoverRating(star)}
+                   onMouseLeave={() => setHoverRating(0)}
+                   fill={(hoverRating || formData.rating) >= star ? 'var(--primary)' : 'transparent'}
+                   color={(hoverRating || formData.rating) >= star ? 'var(--primary)' : 'var(--text-muted)'}
+                   style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                 />
+               ))}
+               <span style={{ marginLeft: 'auto', fontWeight: 'bold' }}>{formData.rating}/10</span>
+             </div>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Genres (comma separated)</label>
+            <input type="text" name="genres" value={formData.genres} onChange={handleChange} style={inputStyle} placeholder="Sci-Fi, Thriller, Action" />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Image URL or YouTube Link (Optional)</label>
+            <input type="url" name="image" value={formData.image} onChange={handleChange} style={inputStyle} placeholder="https://..." />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Review / Notes</label>
+            <textarea name="review" value={formData.review} onChange={handleChange} style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }} placeholder="What did you think?" />
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
+            <button type="button" onClick={onClose} style={{ padding: '10px 20px', background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--glass-border)' }}>
+              Cancel
+            </button>
+            <button type="submit" style={{ padding: '10px 24px', background: 'var(--primary)', color: 'white', fontWeight: 'bold' }}>
+              {initialData ? 'Save Changes' : 'Save Media'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default AddMediaModal;

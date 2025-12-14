@@ -79,3 +79,69 @@
     "title": "Attack On Titan",
     "type": "series",
     "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 8,
+    "review": "good quality escapism. it does edge close to reality sometimes but usually stays in its lane.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180910Z"
+  },
+  {
+    "id": "1776160688116",
+    "title": "Berserk",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 10,
+    "review": "captivating in a weird way. helps pass the time without letting the mind wander.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180914Z"
+  },
+  {
+    "id": "1776160688117",
+    "title": "Cyberpunk Edgerunners",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 9,
+    "review": "captivating in a weird way. helps pass the time without letting the mind wander.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180918Z"
+  },
+  {
+    "id": "1776160688118",
+    "title": "Loki",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 9,
+    "review": "intense enough to drown out other thoughts. a bit heavy sometimes but mostly fine.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180922Z"
+  },
+  {
+    "id": "1776160688119",
+    "title": "Agents Of Shield",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 10,
+    "review": "pretty good for shutting off the brain, dark atmosphere helps.",
