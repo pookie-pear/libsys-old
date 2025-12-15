@@ -255,3 +255,81 @@ app.get('/api/media', (req, res) => {
 app.post('/api/media', auth, (req, res) => {
     const data = readData();
     const newItem = {
+        id: Date.now().toString(),
+        ...req.body,
+        createdAt: new Date().toISOString()
+    };
+    data.push(newItem);
+    writeData(data);
+    res.status(201).json(newItem);
+});
+
+app.put('/api/media/:id', auth, (req, res) => {
+    const { id } = req.params;
+    console.log(`DEBUG: PUT /api/media/${id} - Body:`, req.body);
+    let data = readData();
+    const index = data.findIndex(item => item.id === id);
+    
+    if (index !== -1) {
+        data[index] = { ...data[index], ...req.body, updatedAt: new Date().toISOString() };
+        writeData(data);
+        res.json(data[index]);
+    } else {
+        res.status(404).json({ message: `Item with ID ${id} not found` });
+    }
+});
+
+app.delete('/api/media/:id', auth, (req, res) => {
+    const { id } = req.params;
+    let data = readData();
+    const newData = data.filter(item => item.id !== id);
+    
+    if (data.length !== newData.length) {
+        writeData(newData);
+        res.json({ message: 'Item deleted' });
+    } else {
+        res.status(404).json({ message: `Item with ID ${id} not found` });
+    }
+});
+
+// --- IRL Library Endpoints ---
+
+app.get('/api/irl-books', (req, res) => {
+    const data = readData(IRL_DATA_FILE);
+    res.json(data);
+});
+
+app.post('/api/irl-books', auth, (req, res) => {
+    const data = readData(IRL_DATA_FILE);
+    const newItem = {
+        id: Date.now().toString(),
+        ...req.body,
+        totalCopies: parseInt(req.body.totalCopies) || 1,
+        borrowers: [], // Array of { id, name, dueDate, checkoutDate }
+        createdAt: new Date().toISOString()
+    };
+    data.push(newItem);
+    writeData(data, IRL_DATA_FILE);
+    res.status(201).json(newItem);
+});
+
+app.put('/api/irl-books/:id', auth, (req, res) => {
+    const { id } = req.params;
+    let data = readData(IRL_DATA_FILE);
+    const index = data.findIndex(item => item.id === id);
+    
+    if (index !== -1) {
+        data[index] = { ...data[index], ...req.body, updatedAt: new Date().toISOString() };
+        writeData(data, IRL_DATA_FILE);
+        res.json(data[index]);
+    } else {
+        res.status(404).json({ message: 'Book not found' });
+    }
+});
+
+app.delete('/api/irl-books/:id', auth, (req, res) => {
+    const { id } = req.params;
+    let data = readData(IRL_DATA_FILE);
+    const newData = data.filter(item => item.id !== id);
+    
+    if (data.length !== newData.length) {

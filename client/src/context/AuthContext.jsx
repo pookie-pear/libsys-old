@@ -72,3 +72,48 @@ export const AuthProvider = ({ children }) => {
       body: JSON.stringify({ name, email, password }),
       credentials: 'include'
     });
+    const data = await res.json();
+    if (res.ok) {
+      setUser(data.data.user);
+      localStorage.setItem('token', data.data.token);
+      return { success: true };
+    }
+    return { success: false, message: data.message };
+  };
+
+  const verifySSO = async (code) => {
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/verify-sso', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setUser(data.data.user);
+        localStorage.setItem('token', data.data.token);
+        return { success: true };
+      }
+      return { success: false, message: data.message };
+    } catch (err) {
+      return { success: false, message: 'SSO Verification Failed' };
+    }
+  };
+
+  const logout = async () => {
+    await fetch('http://localhost:5000/api/auth/logout', { 
+      method: 'POST',
+      credentials: 'include'
+    });
+    setUser(null);
+    localStorage.removeItem('token');
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, loading, login, register, logout, verifySSO, refreshAuth: checkLoggedIn }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
