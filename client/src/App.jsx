@@ -6,3 +6,19 @@ import Login from './views/Login';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/library" element={<IrLibrary />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}
+
+
+export default App;
+
