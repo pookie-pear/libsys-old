@@ -145,3 +145,21 @@
     ],
     "rating": 10,
     "review": "pretty good for shutting off the brain, dark atmosphere helps.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180926Z"
+  },
+  {
+    "id": "1776160688120",
+    "title": "What If",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 9,
+    "review": "a solid distraction. visceral and engaging, makes you forget the real world for a bit.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180930Z"

@@ -90,3 +90,15 @@ const IrLibrary = () => {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handleReturn = async (bookId, borrowerId) => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    const book = books.find(b => b.id === bookId);
+    if (!book) return;
+
+    try {
+      const updatedBookData = {
