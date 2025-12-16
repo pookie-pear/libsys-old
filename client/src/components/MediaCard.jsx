@@ -95,3 +95,35 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
       <div style={{ height: '200px', width: '100%', position: 'relative', backgroundColor: 'var(--bg-dark)' }}>
         {type === 'youtube' && ytId ? (
           <iframe
+            width="100%"
+            height="100%"
+            src={`https://www.youtube.com/embed/${ytId}`}
+            title={title}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        ) : image ? (
+          <img 
+            src={image} 
+            alt={title} 
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+        ) : null}
+        
+        {/* Placeholder if no image, no video, or image error */}
+        <div style={{ 
+          display: (!image && type !== 'youtube') || (type === 'youtube' && !ytId) ? 'flex' : 'none', 
+          width: '100%', 
+          height: '100%', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          background: `linear-gradient(45deg, var(--bg-dark), ${color}33)`
+        }}>
+          {React.cloneElement(TypeIcon, { size: 48, color: 'rgba(255,255,255,0.2)' })}
+        </div>
+

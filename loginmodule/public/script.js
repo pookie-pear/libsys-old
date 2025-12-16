@@ -107,3 +107,20 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
             logResponse(data, !response.ok);
+            if(response.ok) {
+                loginForm.reset();
+                if(data.data.token) {
+                    currentToken = data.data.token;
+                    localStorage.setItem('unilToken', currentToken);
+                }
+            }
+        } catch (error) {
+            logResponse({ message: 'Network error occurred' }, true);
+        }
+    });
+
+    // Clear Logic
+    clearBtn.addEventListener('click', () => {
+        responseOutput.innerHTML = 'Console cleared...';
+    });
+});
