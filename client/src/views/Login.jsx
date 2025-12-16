@@ -100,3 +100,70 @@ const Login = () => {
         borderRadius: '24px',
         border: '1px solid var(--glass-border)',
         boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+        backdropFilter: 'blur(12px)'
+      }}>
+        <h1 style={{ 
+          textAlign: 'center', 
+          marginBottom: '8px',
+          fontSize: '2rem',
+          background: 'linear-gradient(to right, var(--primary), var(--accent-cyan))',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent'
+        }}>
+          {isLogin ? 'Welcome Back' : 'Create Account'}
+        </h1>
+
+        {checkingSession ? (
+          <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
+            Checking session...
+          </div>
+        ) : unilUser ? (
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ 
+              width: '80px', 
+              height: '80px', 
+              background: 'var(--primary)', 
+              borderRadius: '50%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              margin: '0 auto 20px',
+              fontSize: '2rem',
+              color: 'white',
+              fontWeight: 'bold'
+            }}>
+              {unilUser.name ? unilUser.name[0].toUpperCase() : unilUser.email[0].toUpperCase()}
+            </div>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>
+              Detected UniLogin session for <strong>{unilUser.name || unilUser.email}</strong>
+            </p>
+            
+            <button
+              onClick={handleUniLoginSSO}
+              disabled={loading}
+              style={{
+                width: '100%',
+                padding: '14px',
+                background: 'var(--primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontWeight: 'bold',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                marginBottom: '16px',
+                transition: 'all 0.2s',
+                opacity: loading ? 0.7 : 1
+              }}
+            >
+              {loading ? 'Logging in...' : `Continue as ${unilUser.name || unilUser.email.split('@')[0]}`}
+            </button>
+
+            <button
+              onClick={() => setUnilUser(null)}
+              style={{
+                width: '100%',
+                padding: '14px',
+                background: 'transparent',
+                color: 'var(--text-muted)',
+                border: '1px solid var(--glass-border)',
