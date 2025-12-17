@@ -167,3 +167,79 @@ const Login = () => {
                 background: 'transparent',
                 color: 'var(--text-muted)',
                 border: '1px solid var(--glass-border)',
+                borderRadius: '12px',
+                fontWeight: '600',
+                fontSize: '0.9rem',
+                cursor: 'pointer'
+              }}
+            >
+              Login as different user
+            </button>
+          </div>
+        ) : (
+          <>
+            <p style={{ 
+              textAlign: 'center', 
+              color: 'var(--text-muted)', 
+              marginBottom: '32px' 
+            }}>
+              {isLogin ? 'Enter your details to access your library' : 'Join us to start managing your collection'}
+            </p>
+
+            {error && (
+              <div style={{
+                padding: '12px',
+                background: 'rgba(225, 29, 72, 0.1)',
+                border: '1px solid var(--accent-rose)',
+                color: 'var(--accent-rose)',
+                borderRadius: '12px',
+                marginBottom: '20px',
+                fontSize: '0.9rem',
+                textAlign: 'center'
+              }}>
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {!isLogin && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Full Name</label>
+                  <input
+                    type="text"
+                    placeholder="John Doe"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+              )}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Email Address</label>
+                <input
+                  type="email"
+                  placeholder="name@example.com"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Password</label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  required
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  marginTop: '12px',
+                  padding: '14px',

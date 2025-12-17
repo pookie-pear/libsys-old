@@ -118,3 +118,33 @@ const Dashboard = () => {
                 style={{
                   padding: '10px 20px',
                   background: 'var(--accent-cyan)',
+                  color: 'var(--bg-dark)',
+                  fontWeight: 'bold',
+                  borderRadius: '12px',
+                  fontSize: '0.9rem'
+                }}
+              >
+                IRL Library
+              </button>
+            )}
+
+            <div style={{ height: '30px', width: '1px', background: 'var(--glass-border)', margin: '0 8px' }}></div>
+
+            {user ? (
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '12px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                padding: '6px 6px 6px 16px',
+                borderRadius: '16px',
+                border: '1px solid var(--glass-border)',
+                transition: 'all 0.3s'
+              }}>
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ fontSize: '0.9rem', fontWeight: '800', margin: 0, color: 'white', letterSpacing: '0.02em' }}>
+                    {user.name || user.email.split('@')[0]}
+                  </p>
+                  <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: 0, opacity: 0.8 }}>
+                    {user.email}
+                  </p>

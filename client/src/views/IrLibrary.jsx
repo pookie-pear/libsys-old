@@ -105,3 +105,51 @@ const IrLibrary = () => {
         ...book,
         borrowers: book.borrowers.filter(b => b.id !== borrowerId)
       };
+
+      const res = await fetch(`${API_URL}/${bookId}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(updatedBookData)
+      });
+      const updated = await res.json();
+      setBooks(books.map(b => b.id === bookId ? updated : b));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const openCheckoutModal = (id) => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    setCheckoutBookId(id);
+    setBorrowerName('');
+    setDueDate('');
+    setIsCheckoutModalOpen(true);
+  };
+
+  const handleCheckoutSubmit = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    const book = books.find(b => b.id === checkoutBookId);
+    if (!book) return;
+
+    // Optional validation to prevent over-borrowing in case
+    const available = book.totalCopies - (book.borrowers?.length || 0);
+    if (available <= 0) return;
+
+    try {
+      const newBorrowerItem = {
+        id: Date.now().toString(),
+        name: borrowerName,
+        dueDate: dueDate
+      };
+
+      const updatedBookData = {

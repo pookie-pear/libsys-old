@@ -78,3 +78,28 @@ app.post('/api/register', async (req, res, next) => {
     console.log('DEBUG: User created in DB:', {
       id: user._id,
       name: user.name,
+      email: user.email,
+      collection: User.collection.name,
+      db: User.db.name
+    });
+
+    const token = generateToken({ id: user._id, email: user.email }, process.env.JWT_SECRET);
+    
+    // Set cookie for browser-based SSO
+    res.cookie('unil_session', token, {
+      httpOnly: true,
+      secure: false, // Set to true in production with HTTPS
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+
+    return successResponse(res, 201, {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      token: token
+    }, 'User registered successfully');
+    
+  } catch (error) {
+    next(error);
+  }

@@ -213,3 +213,65 @@
     "id": "1776160688124",
     "title": "Mandalorian",
     "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 9,
+    "review": "a solid distraction. visceral and engaging, makes you forget the real world for a bit.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180948Z"
+  },
+  {
+    "id": "1776160688125",
+    "title": "Walking Dead",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 8,
+    "review": "intense enough to drown out other thoughts. a bit heavy sometimes but mostly fine.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180952Z"
+  },
+  {
+    "id": "1776160688126",
+    "title": "Fear The Walking Dead",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 9,
+    "review": "pretty good for shutting off the brain, dark atmosphere helps.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180956Z"
+  },
+  {
+    "id": "1776160688127",
+    "title": "The Last Of Us",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 8,
+    "review": "its decent to help not think about \"things\" you tryhard not to, has few rare parts that remind but in general decent",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180960Z"
+  },
+  {
+    "id": "1776160688128",
+    "title": "Love,Death+Robots",
+    "type": "series",
+    "genres": [
+      "thriller",
