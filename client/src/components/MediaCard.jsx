@@ -127,3 +127,46 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
           {React.cloneElement(TypeIcon, { size: 48, color: 'rgba(255,255,255,0.2)' })}
         </div>
 
+        {/* Type Badge */}
+        <div style={{
+          position: 'absolute',
+          bottom: '12px',
+          left: '12px',
+          background: 'rgba(0, 0, 0, 0.7)',
+          backdropFilter: 'blur(4px)',
+          padding: '4px 10px',
+          borderRadius: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          fontSize: '0.75rem',
+          fontWeight: '600',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          color: 'white',
+          border: `1px solid ${color}66`
+        }}>
+          {React.cloneElement(TypeIcon, { size: 12, color })}
+          {type}
+        </div>
+      </div>
+
+      {/* Content Area */}
+      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+            {type === 'youtube' && ytId ? (
+              <a 
+                href={`https://www.youtube.com/watch?v=${ytId}`} 
+                target="_blank" 
+                rel="noreferrer"
+                style={{ fontSize: '1.1rem', margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-main)', textDecoration: 'none', transition: 'color 0.2s' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-rose)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-main)'}
+                title="Open on YouTube"
+              >
+                <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{title}</span>
+                <ExternalLink size={16} style={{ flexShrink: 0 }} />
+              </a>
+            ) : (
+              <h3 style={{ fontSize: '1.1rem', margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>

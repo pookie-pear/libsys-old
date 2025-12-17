@@ -102,3 +102,6 @@ const IrLibrary = () => {
 
     try {
       const updatedBookData = {
+        ...book,
+        borrowers: book.borrowers.filter(b => b.id !== borrowerId)
+      };
