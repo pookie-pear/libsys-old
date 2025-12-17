@@ -148,3 +148,45 @@ const Dashboard = () => {
                   <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: 0, opacity: 0.8 }}>
                     {user.email}
                   </p>
+                </div>
+                <div style={{ width: '1px', height: '24px', background: 'var(--glass-border)', margin: '0 4px' }}></div>
+                <button 
+                  onClick={logout}
+                  title="Logout"
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: '40px', height: '40px', borderRadius: '12px', 
+                    background: 'rgba(225, 29, 72, 0.1)',
+                    color: 'var(--accent-rose)', border: '1px solid rgba(225, 29, 72, 0.2)',
+                    cursor: 'pointer', transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(225, 29, 72, 0.2)';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(225, 29, 72, 0.1)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  <LogOut size={18} />
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => navigate('/login')}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '10px 20px', borderRadius: '12px', background: 'var(--primary)',
+                  color: 'white', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)'
+                }}
+              >
+                <LogIn size={18} /> Login
+              </button>
+            )}
+          </div>
+        </header>
+
+
+        {/* Status & Rating Filters */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
