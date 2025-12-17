@@ -163,3 +163,53 @@
     "image": "",
     "category": "completed",
     "createdAt": "2026-04-14T14:32:05.180930Z"
+  },
+  {
+    "id": "1776160688121",
+    "title": "Breaking Bad",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 7,
+    "review": "its decent to help not think about \"things\" you tryhard not to, has few rare parts that remind but in general decent",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180934Z"
+  },
+  {
+    "id": "1776160688122",
+    "title": "Better Call Saul",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 7,
+    "review": "a solid distraction. visceral and engaging, makes you forget the real world for a bit.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180939Z"
+  },
+  {
+    "id": "1776160688123",
+    "title": "Star Wars",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 9,
+    "review": "doesn't require too much energy to watch, which is perfect right now.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180943Z"
+  },
+  {
+    "id": "1776160688124",
+    "title": "Mandalorian",
+    "type": "series",

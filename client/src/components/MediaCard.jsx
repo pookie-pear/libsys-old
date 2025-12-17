@@ -170,3 +170,55 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
               </a>
             ) : (
               <h3 style={{ fontSize: '1.1rem', margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                {title}
+              </h3>
+            )}
+            
+            {type !== 'youtube' && (
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigator.clipboard.writeText(title);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                style={{ background: 'transparent', color: copied ? 'var(--accent-cyan)' : 'var(--text-muted)', border: 'none', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+                title="Copy Title"
+              >
+                {copied ? <Check size={16} /> : <Copy size={16} />}
+              </button>
+            )}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--primary)', padding: '4px 8px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.9rem' }}>
+            {rating} <Star size={12} fill="currentColor" />
+          </div>
+        </div>
+
+        {/* Genres */}
+        {genres && genres.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
+            {genres.slice(0, 3).map((g, i) => (
+              <span key={i} style={{ fontSize: '0.75rem', color: 'var(--accent-cyan)', background: 'rgba(34, 211, 238, 0.1)', padding: '2px 8px', borderRadius: '10px' }}>
+                {g}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Review Snippet */}
+        {review && (
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginTop: 'auto' }}>
+            "{review}"
+          </p>
+        )}
+      </div>
+
+      {/* Inject hover styles */}
+      <style>{`
+        .glass-card:hover .action-btns { opacity: 1 !important; }
+      `}</style>
+    </div>
+  );
+};
+
+export default MediaCard;
