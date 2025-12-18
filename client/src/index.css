@@ -72,3 +72,46 @@ input:focus, textarea:focus {
 ::-webkit-scrollbar {
   width: 8px;
 }
+
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Responsive Layout Overrides */
+@media (max-width: 900px) {
+  .layout-container {
+    flex-direction: column !important;
+    padding: 16px !important;
+  }
+  
+  .sidebar-container {
+    position: fixed;
+    top: 0;
+    left: -320px;
+    height: 100vh;
+    z-index: 99;
+    transition: left 0.3s ease;
+    background: var(--bg-dark);
+    padding: 24px;
+    border-right: 1px solid var(--glass-border);
+  }
+
+  .sidebar-container.open {
+    left: 0;
+  }
+
+  .mobile-menu-btn {
+    display: block !important;
+  }
+
+  header {
+    flex-direction: column;

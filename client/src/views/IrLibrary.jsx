@@ -256,3 +256,7 @@ const IrLibrary = () => {
                       color: adminTab === 'loans' ? 'var(--bg-dark)' : 'var(--text-muted)',
                       border: 'none', transition: 'all 0.2s'
                     }}
+                  >
+                    <ShoppingCart size={18} /> 
+                    Loans ({allBorrowedItems.length})
+                  </button>
