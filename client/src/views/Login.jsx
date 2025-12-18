@@ -297,3 +297,19 @@ const Login = () => {
                   background: 'transparent',
                   border: 'none',
                   color: 'var(--primary)',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '600'
+                }}
+              >
+                {isLogin ? "Don't have an account? Sign Up" : 'Already have an account? Sign In'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Login;
