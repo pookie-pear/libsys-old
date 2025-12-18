@@ -213,3 +213,46 @@ const IrLibrary = () => {
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           {user ? (
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '12px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              padding: '6px 6px 6px 16px',
+              borderRadius: '16px',
+              border: '1px solid var(--glass-border)',
+            }}>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: '0.9rem', fontWeight: '800', margin: 0, color: 'white', letterSpacing: '0.02em' }}>
+                  {user.name || user.email.split('@')[0]}
+                </p>
+                <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: 0, opacity: 0.8 }}>
+                  {user.email}
+                </p>
+              </div>
+
+              <div style={{ width: '1px', height: '24px', background: 'var(--glass-border)', margin: '0 4px' }}></div>
+              
+              {isAdmin && (
+                <div style={{ display: 'flex', background: 'var(--bg-dark)', borderRadius: '12px', padding: '4px', border: '1px solid var(--glass-border)' }}>
+                  <button
+                    onClick={() => setAdminTab('inventory')}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      padding: '8px 16px', borderRadius: '8px', fontWeight: 'bold',
+                      background: adminTab === 'inventory' ? 'var(--primary)' : 'transparent',
+                      color: adminTab === 'inventory' ? 'white' : 'var(--text-muted)',
+                      border: 'none', transition: 'all 0.2s'
+                    }}
+                  >
+                    <Book size={18} /> Inventory
+                  </button>
+                  <button
+                    onClick={() => setAdminTab('loans')}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      padding: '8px 16px', borderRadius: '8px', fontWeight: 'bold',
+                      background: adminTab === 'loans' ? 'var(--accent-cyan)' : 'transparent',
+                      color: adminTab === 'loans' ? 'var(--bg-dark)' : 'var(--text-muted)',
+                      border: 'none', transition: 'all 0.2s'
+                    }}

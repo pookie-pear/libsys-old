@@ -275,3 +275,78 @@
     "type": "series",
     "genres": [
       "thriller",
+      "drama",
+      "action",
+      "100/10"
+    ],
+    "rating": 10,
+    "review": "literally speechless",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180964Z",
+    "updatedAt": "2026-04-14T14:54:32.350Z"
+  },
+  {
+    "id": "1776160688129",
+    "title": "Narcos:Mexico",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 7,
+    "review": "intense enough to drown out other thoughts. a bit heavy sometimes but mostly fine.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180968Z"
+  },
+  {
+    "id": "1776160688130",
+    "title": "Watchmen",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 9,
+    "review": "intense enough to drown out other thoughts. a bit heavy sometimes but mostly fine.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180972Z"
+  },
+  {
+    "id": "1776160688131",
+    "title": "Watchmen(Toon)",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 7,
+    "review": "doesn't require too much energy to watch, which is perfect right now.",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180976Z"
+  },
+  {
+    "id": "1776160688132",
+    "title": "Arcane",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 8,
+    "review": "captivating in a weird way. helps pass the time without letting the mind wander.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180980Z"
+  },
+  {
+    "id": "1776160688133",
+    "title": "Common Side Effects",
+    "type": "series",
