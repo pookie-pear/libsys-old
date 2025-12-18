@@ -103,3 +103,54 @@ app.post('/api/register', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+/**
+ * Custom Login Route
+ * POST { "email": "...", "password": "..." }
+ */
+app.post('/api/login', async (req, res, next) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return errorResponse(res, 401, 'Invalid credentials (User not found)');
+    }
+
+    const isMatch = await comparePassword(password, user.password);
+    if (!isMatch) {
+      return errorResponse(res, 401, 'Invalid credentials (Incorrect password)');
+    }
+
+    console.log('Login successful for:', email);
+    const token = generateToken({ id: user._id, email: user.email }, process.env.JWT_SECRET);
+
+    // Set cookie for browser-based SSO
+    res.cookie('unil_session', token, {
+      httpOnly: true,
+      secure: false, // Set to true in production with HTTPS
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+
+    return successResponse(res, 200, { 
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email
+      },
+      token: token
+    }, 'Login Successful');
+    
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * SSO Authorize Endpoint
+ * GET /api/sso/authorize?redirect_uri=http://service-b.com/callback
+ * This checks if the user is already logged in to UniLogin.
+ */
+app.get('/api/sso/authorize', (req, res) => {
