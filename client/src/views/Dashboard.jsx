@@ -190,3 +190,59 @@ const Dashboard = () => {
 
         {/* Status & Rating Filters */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
+            {[
+              { id: 'all', label: 'All Statuses' },
+              { id: 'completed', label: 'Completed' },
+              { id: 'in_progress', label: 'In Progress' },
+              { id: 'wishlist', label: 'Wishlist' }
+            ].map(status => (
+              <button
+                key={status.id}
+                onClick={() => setStatusFilter(status.id)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  background: statusFilter === status.id ? 'var(--primary)' : 'rgba(30, 41, 59, 0.7)',
+                  color: statusFilter === status.id ? 'white' : 'var(--text-muted)',
+                  fontWeight: '600',
+                  border: '1px solid var(--glass-border)',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {status.label}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-card)', padding: '6px 16px', borderRadius: '20px', border: '1px solid var(--glass-border)' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: '600' }}>Min Rating:</span>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              {[...Array(10)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setRatingFilter(ratingFilter === i + 1 ? 0 : i + 1)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    padding: '2px',
+                    cursor: 'pointer',
+                    color: i < ratingFilter ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <Star fill={i < ratingFilter ? 'currentColor' : 'transparent'} size={18} />
+                </button>
+              ))}
+            </div>
+            {ratingFilter > 0 && (
+              <span style={{ fontSize: '0.9rem', fontWeight: 'bold', minWidth: '40px' }}>{ratingFilter}+</span>
+            )}
+          </div>
+        </div>
+
+        {loading ? (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: '40px', height: '40px', border: '4px solid var(--primary)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+            <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+          </div>

@@ -333,3 +333,37 @@ app.delete('/api/irl-books/:id', auth, (req, res) => {
     const newData = data.filter(item => item.id !== id);
     
     if (data.length !== newData.length) {
+        writeData(newData, IRL_DATA_FILE);
+        res.json({ message: 'Book deleted' });
+    } else {
+        res.status(404).json({ message: 'Book not found' });
+    }
+});
+
+app.get('/api/yt-title', auth, async (req, res) => {
+
+    const { url } = req.query;
+    if (!url) return res.status(400).json({ message: 'URL required' });
+
+    try {
+        const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(url)}`);
+        const data = await response.json();
+        if (data.title) {
+            res.json({ title: data.title });
+        } else {
+            res.status(404).json({ message: 'Title not found' });
+        }
+    } catch (err) {
+        console.error('Error fetching YouTube title:', err);
+        res.status(500).json({ message: 'Failed to fetch title' });
+    }
+});
+
+// Error handling
+app.use(notFound);
+app.use(errorHandler);
+
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
+

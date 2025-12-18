@@ -354,3 +354,59 @@
       "thriller",
       "drama",
       "action"
+    ],
+    "rating": 7,
+    "review": "captivating in a weird way. helps pass the time without letting the mind wander.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180985Z"
+  },
+  {
+    "id": "1776160688134",
+    "title": "Secret Level",
+    "type": "series",
+    "genres": [
+      "sci-fi",
+      "mystery",
+      "dark"
+    ],
+    "rating": 9,
+    "review": "its decent to help not think about \"things\" you tryhard not to, has few rare parts that remind but in general decent",
+    "image": "",
+    "category": "completed",
+    "createdAt": "2026-04-14T14:32:05.180989Z"
+  },
+  {
+    "id": "1776160688135",
+    "title": "Game Of Thrones",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 9,
+    "review": "a solid distraction. visceral and engaging, makes you forget the real world for a bit.",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180994Z"
+  },
+  {
+    "id": "1776160688136",
+    "title": "Lord Of The Rings",
+    "type": "series",
+    "genres": [
+      "thriller",
+      "drama",
+      "action"
+    ],
+    "rating": 8,
+    "review": "its decent to help not think about \"things\" you tryhard not to, has few rare parts that remind but in general decent",
+    "image": "",
+    "category": "in_progress",
+    "createdAt": "2026-04-14T14:32:05.180998Z"
+  },
+  {
+    "id": "1776160688137",
+    "title": "Chernobyl",
+    "type": "series",

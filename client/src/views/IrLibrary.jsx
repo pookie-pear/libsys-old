@@ -260,3 +260,82 @@ const IrLibrary = () => {
                     <ShoppingCart size={18} /> 
                     Loans ({allBorrowedItems.length})
                   </button>
+                </div>
+              )}
+
+              <button
+                onClick={() => {
+                  setIsAdmin(!isAdmin);
+                  setAdminTab('inventory');
+                }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '10px 20px', borderRadius: '12px', fontWeight: 'bold',
+                  background: isAdmin ? 'var(--accent-rose)' : 'var(--bg-card)',
+                  color: 'white', border: '1px solid var(--glass-border)',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <Shield size={20} />
+                {isAdmin ? 'Exit Admin Mode' : 'Enter Admin Mode'}
+              </button>
+
+              <button 
+                onClick={logout}
+                title="Logout"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: '40px', height: '40px', borderRadius: '12px', 
+                  background: 'rgba(225, 29, 72, 0.1)',
+                  color: 'var(--accent-rose)', border: '1px solid rgba(225, 29, 72, 0.2)',
+                  cursor: 'pointer', transition: 'all 0.2s'
+                }}
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={() => navigate('/login')}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                padding: '10px 20px', borderRadius: '12px', background: 'var(--primary)',
+                color: 'white', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)'
+              }}
+            >
+              <LogIn size={18} /> Login
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* Conditionally Render Main Content vs Loans View */}
+      {(!isAdmin || adminTab === 'inventory') ? (
+        <>
+          {/* Admin Add New Book Form */}
+          {isAdmin && (
+            <section className="glass-card" style={{ padding: '24px', marginBottom: '24px', borderLeft: '4px solid var(--accent-rose)' }}>
+              <h2 style={{ marginBottom: '16px', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Book size={20} color="var(--primary)" /> Add to Inventory
+              </h2>
+              <form onSubmit={handleAddBook} style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <input 
+                  type="text" placeholder="Book Title" 
+                  value={newTitle} onChange={(e) => setNewTitle(e.target.value)} 
+                  style={{ ...inputStyle, flex: 2, minWidth: '200px' }} required
+                />
+                <input 
+                  type="text" placeholder="Author" 
+                  value={newAuthor} onChange={(e) => setNewAuthor(e.target.value)} 
+                  style={{ ...inputStyle, flex: 1, minWidth: '150px' }} required
+                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(15, 23, 42, 0.6)', padding: '0 12px', borderRadius: '8px', border: '1px solid var(--glass-border)'}}>
+                  <span style={{color: 'var(--text-muted)'}}>Copies:</span>
+                  <input 
+                    type="number" min="1"
+                    value={newCopies} onChange={(e) => setNewCopies(parseInt(e.target.value) || 1)} 
+                    style={{ ...inputStyle, width: '70px', border: 'none', background: 'transparent' }} required
+                  />
+                </div>
+                <button type="submit" style={{ padding: '10px 24px', background: 'var(--primary)', color: 'white', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <PlusCircle size={18} /> Add

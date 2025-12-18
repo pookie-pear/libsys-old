@@ -243,3 +243,57 @@ const Login = () => {
                 style={{
                   marginTop: '12px',
                   padding: '14px',
+                  background: 'var(--primary)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontWeight: 'bold',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  opacity: loading ? 0.7 : 1
+                }}
+              >
+                {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
+              </button>
+            </form>
+
+            <div style={{ display: 'flex', alignItems: 'center', margin: '24px 0', gap: '16px' }}>
+              <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>OR</span>
+              <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
+            </div>
+
+            <button
+              onClick={handleUniLoginSSO}
+              disabled={loading}
+              style={{
+                width: '100%',
+                padding: '14px',
+                background: 'transparent',
+                color: 'white',
+                border: '1px solid var(--primary)',
+                borderRadius: '12px',
+                fontWeight: 'bold',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                transition: 'all 0.2s',
+                opacity: loading ? 0.7 : 1
+              }}
+            >
+              <img src="/favicon.svg" alt="Unil" style={{ width: '20px', height: '20px' }} />
+              Login with UniLogin
+            </button>
+
+            <div style={{ textAlign: 'center', marginTop: '24px' }}>
+
+              <button
+                onClick={() => setIsLogin(!isLogin)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--primary)',

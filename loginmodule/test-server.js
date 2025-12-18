@@ -154,3 +154,25 @@ app.post('/api/login', async (req, res, next) => {
  * This checks if the user is already logged in to UniLogin.
  */
 app.get('/api/sso/authorize', (req, res) => {
+  const { redirect_uri } = req.query;
+  
+  // Try to get token from Authorization header OR HttpOnly cookie
+  const token = req.headers.authorization?.split(' ')[1] || req.cookies.unil_session;
+
+  if (!redirect_uri) return errorResponse(res, 400, 'redirect_uri is required');
+
+  try {
+    // 1. If user is logged in (token provided)
+    if (token) {
+      const decoded = exchangeAuthCode(token, process.env.JWT_SECRET);
+      
+      // 2. Generate a temporary auth code (valid for 5 mins)
+      const authCode = generateAuthCode({ id: decoded.id, email: decoded.email }, process.env.JWT_SECRET);
+      
+      // 3. Redirect back to Service B with the code
+      const targetUrl = new URL(redirect_uri);
+      targetUrl.searchParams.append('code', authCode);
+      console.log(`SSO: Redirecting to ${targetUrl.toString()}`);
+      return res.redirect(targetUrl.toString());
+    }
+
