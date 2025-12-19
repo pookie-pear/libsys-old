@@ -246,3 +246,24 @@ const Dashboard = () => {
             <div style={{ width: '40px', height: '40px', border: '4px solid var(--primary)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
             <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
           </div>
+        ) : error ? (
+          <div style={{ color: 'var(--accent-rose)', textAlign: 'center', padding: '40px' }}>
+            <h3>Error loading library</h3>
+            <p>{error}</p>
+          </div>
+        ) : (
+          <MediaGrid items={filteredLibrary} onDelete={deleteMedia} onEdit={handleEditClick} />
+        )}
+      </main>
+
+      <AddMediaModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSave={handleSaveMedia}
+        initialData={editingItem}
+      />
+    </div>
+  );
+};
+
+export default Dashboard;

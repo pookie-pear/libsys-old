@@ -235,3 +235,7 @@ app.use(notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+  console.log(`Test server running on http://localhost:${PORT}`);
+  console.log(`MONGO_URI: ${process.env.MONGO_URI ? 'Configured' : 'NOT Configured'}`);
+});
