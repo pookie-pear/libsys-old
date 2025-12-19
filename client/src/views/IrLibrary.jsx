@@ -339,3 +339,10 @@ const IrLibrary = () => {
                 </div>
                 <button type="submit" style={{ padding: '10px 24px', background: 'var(--primary)', color: 'white', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <PlusCircle size={18} /> Add
+                </button>
+              </form>
+            </section>
+          )}
+
+          {/* Main Inventory Table */}
+          <section className="glass-card" style={{ padding: '24px' }}>

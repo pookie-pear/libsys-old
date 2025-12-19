@@ -176,3 +176,62 @@ app.get('/api/sso/authorize', (req, res) => {
       return res.redirect(targetUrl.toString());
     }
 
+    // 4. If not logged in, tell Service B to send user to our login page
+    return errorResponse(res, 401, 'User not logged in to UniLogin. Please redirect them to the login UI.');
+  } catch (error) {
+    return errorResponse(res, 401, 'Session expired. Please log in again.');
+  }
+});
+
+/**
+ * SSO Verify Endpoint (Backend-to-Backend)
+ * POST /api/sso/verify { "code": "..." }
+ * Service B uses this to exchange the code for user info.
+ */
+app.post('/api/sso/verify', (req, res) => {
+  const { code } = req.body;
+
+  if (!code) return errorResponse(res, 400, 'Auth code is required');
+
+  try {
+    const userData = exchangeAuthCode(code, process.env.JWT_SECRET);
+    console.log(`SSO: Code verified for user ${userData.email}`);
+    return successResponse(res, 200, { 
+      user: userData,
+      message: 'Single Sign-On successful' 
+    }, 'SSO Verification Successful');
+  } catch (error) {
+    return errorResponse(res, 401, 'Invalid or expired auth code');
+  }
+});
+
+app.get('/api/me', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1] || req.cookies.unil_session;
+  if (!token) return errorResponse(res, 401, 'No session');
+  try {
+    const userData = exchangeAuthCode(token, process.env.JWT_SECRET);
+    return successResponse(res, 200, userData, 'Session active');
+  } catch (error) {
+    return errorResponse(res, 401, 'Invalid session');
+  }
+});
+
+/**
+ * Logout Route
+ * Clears the session cookie
+ */
+app.post('/api/logout', (req, res) => {
+  res.clearCookie('unil_session');
+  return successResponse(res, 200, null, 'Logged out successfully');
+});
+
+// Basic check route
+app.get('/', (req, res) => {
+  res.send('Test server is running. POST to /api/register or /api/login to test.');
+});
+
+// Error handling
+app.use(notFound);
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 5001;
