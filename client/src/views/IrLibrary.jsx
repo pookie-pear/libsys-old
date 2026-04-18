@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Book, User, Calendar, PlusCircle, Trash2, CheckCircle, Shield, ShoppingCart, LogIn, LogOut, X } from 'lucide-react';
+import { ArrowLeft, Book, User, Calendar, PlusCircle, Trash2, CheckCircle, Shield, ShoppingCart, LogIn, LogOut, X, RefreshCcw } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const API_URL = '/api/irl-books';
@@ -23,9 +23,32 @@ const IrLibrary = () => {
   // Modal for checkout
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [checkoutBookId, setCheckoutBookId] = useState(null);
-  const [borrowerName, setBorrowerName] = useState('');
-  const [borrowerEmail, setBorrowerEmail] = useState('');
+  const [borrowerName, setBorrowerName] = useState(user ? (user.name || user.email.split('@')[0]) : '');
+  const [borrowerEmail, setBorrowerEmail] = useState(user ? (user.email || '') : '');
   const [dueDate, setDueDate] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSync = async () => {
+    if (!window.confirm('This will sync your local JSON data with the database and fetch missing images. Continue?')) return;
+    setIsSyncing(true);
+    try {
+      const res = await fetch('/api/admin/sync', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Sync completed successfully!');
+        fetchBooks();
+      } else {
+        alert('Sync failed: ' + data.message);
+      }
+    } catch (err) {
+      alert('Error syncing data');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const fetchBooks = async () => {
     try {
@@ -225,6 +248,26 @@ const IrLibrary = () => {
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button
+            onClick={handleSync}
+            disabled={isSyncing}
+            title="Sync with local JSON data and fetch images"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '40px', height: '40px', borderRadius: '12px', 
+              background: 'rgba(34, 211, 238, 0.1)',
+              color: 'var(--accent-cyan)', border: '1px solid rgba(34, 211, 238, 0.2)',
+              cursor: isSyncing ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
+              opacity: isSyncing ? 0.5 : 1
+            }}
+          >
+            <RefreshCcw size={18} className={isSyncing ? 'spin' : ''} />
+            <style>{`
+              .spin { animation: spin 2s linear infinite; }
+              @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            `}</style>
+          </button>
+
           {user ? (
             <div style={{ 
               display: 'flex', 

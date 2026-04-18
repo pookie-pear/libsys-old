@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, LogIn, User, LogOut } from 'lucide-react';
+import { Star, LogIn, User, LogOut, RefreshCcw } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import MediaGrid from '../components/MediaGrid';
 import AddMediaModal from '../components/AddMediaModal';
@@ -8,7 +8,7 @@ import { useLibrary } from '../hooks/useLibrary';
 import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
-  const { library, loading, error, addMedia, updateMedia, deleteMedia } = useLibrary();
+  const { library, loading, error, addMedia, updateMedia, deleteMedia, refreshLibrary } = useLibrary();
   const { user, logout } = useAuth();
   const [filter, setFilter] = useState('all'); 
   const [statusFilter, setStatusFilter] = useState('all'); // all, completed, in_progress, wishlist
@@ -16,10 +16,33 @@ const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingItem, setEditingItem] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigate = useNavigate();
+
+  const handleSync = async () => {
+    if (!window.confirm('This will sync your local JSON data with the database and fetch missing images. Continue?')) return;
+    setIsSyncing(true);
+    try {
+      const res = await fetch('/api/admin/sync', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Sync completed successfully!');
+        refreshLibrary();
+      } else {
+        alert('Sync failed: ' + data.message);
+      }
+    } catch (err) {
+      alert('Error syncing data');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const filteredLibrary = useMemo(() => {
     return library
@@ -104,6 +127,26 @@ const Dashboard = () => {
           </div>
 
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <button
+              onClick={handleSync}
+              disabled={isSyncing}
+              title="Sync with local JSON data and fetch images"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: '40px', height: '40px', borderRadius: '12px', 
+                background: 'rgba(34, 211, 238, 0.1)',
+                color: 'var(--accent-cyan)', border: '1px solid rgba(34, 211, 238, 0.2)',
+                cursor: isSyncing ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
+                opacity: isSyncing ? 0.5 : 1
+              }}
+            >
+              <RefreshCcw size={18} className={isSyncing ? 'spin' : ''} />
+              <style>{`
+                .spin { animation: spin 2s linear infinite; }
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+              `}</style>
+            </button>
+
             <input 
               type="text" 
               placeholder="Search by title or genre..." 

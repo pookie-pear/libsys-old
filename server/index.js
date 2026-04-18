@@ -19,6 +19,7 @@ const {
 } = require('../loginmodule/src/index');
 
 const jwt = require('jsonwebtoken');
+const { searchImage, uploadToImgBB } = require('./utils/imageService');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -312,9 +313,26 @@ app.get('/api/media', async (req, res) => {
 
 app.post('/api/media', auth, async (req, res) => {
     try {
-        const newMedia = await Media.create(req.body);
+        let { title, type, image } = req.body;
+        
+        // Auto-fetch image if missing
+        if (!image) {
+            // Check if we already have an image for this title in the DB
+            const existing = await Media.findOne({ title: { $regex: new RegExp(`^${title}$`, 'i') } });
+            if (existing && existing.image) {
+                image = existing.image;
+            } else {
+                const searched = await searchImage(title, type);
+                if (searched) {
+                    image = await uploadToImgBB(searched, title);
+                }
+            }
+        }
+
+        const newMedia = await Media.create({ ...req.body, image });
         res.status(201).json({ ...newMedia._doc, id: newMedia._id });
     } catch (err) {
+        console.error('Error adding media:', err);
         res.status(400).json({ message: 'Error adding media' });
     }
 });
@@ -363,12 +381,34 @@ app.get('/api/irl-books', async (req, res) => {
 
 app.post('/api/irl-books', auth, async (req, res) => {
     try {
+        let { title, image } = req.body;
+
+        // Auto-fetch image if missing
+        if (!image) {
+            // Check if we already have an image for this title in the DB (anywhere)
+            const existingMedia = await Media.findOne({ title: { $regex: new RegExp(`^${title}$`, 'i') } });
+            const existingBook = await IrlBook.findOne({ title: { $regex: new RegExp(`^${title}$`, 'i') } });
+            
+            if (existingMedia && existingMedia.image) {
+                image = existingMedia.image;
+            } else if (existingBook && existingBook.image) {
+                image = existingBook.image;
+            } else {
+                const searched = await searchImage(title, 'book');
+                if (searched) {
+                    image = await uploadToImgBB(searched, title);
+                }
+            }
+        }
+
         const newBook = await IrlBook.create({
             ...req.body,
+            image,
             borrowers: []
         });
         res.status(201).json({ ...newBook._doc, id: newBook._id });
     } catch (err) {
+        console.error('Error adding book:', err);
         res.status(400).json({ message: 'Error adding book' });
     }
 });
@@ -422,7 +462,65 @@ app.get('/api/yt-title', auth, async (req, res) => {
     }
 });
 
-// Serve static assets in production
+// --- Admin/Sync Endpoints ---
+
+app.post('/api/admin/sync', auth, async (req, res) => {
+    try {
+        // We'll run the sync logic directly here for simplicity
+        const libraryPath = path.join(__dirname, '../data/library.json');
+        const irlPath = path.join(__dirname, '../data/irl_library.json');
+        const imageCache = {};
+
+        if (fs.existsSync(libraryPath)) {
+            const libraryData = JSON.parse(fs.readFileSync(libraryPath, 'utf8'));
+            for (const item of libraryData) {
+                let existing = await Media.findOne({ title: { $regex: new RegExp(`^${item.title}$`, 'i') } });
+                let imageUrl = item.image || (existing ? existing.image : null);
+                if (!imageUrl) {
+                    if (imageCache[item.title.toLowerCase()]) {
+                        imageUrl = imageCache[item.title.toLowerCase()];
+                    } else {
+                        const searched = await searchImage(item.title, item.type);
+                        if (searched) {
+                            imageUrl = await uploadToImgBB(searched, item.title);
+                            imageCache[item.title.toLowerCase()] = imageUrl;
+                        }
+                    }
+                }
+                const updateData = { ...item, image: imageUrl, updatedAt: new Date().toISOString() };
+                delete updateData.id;
+                await Media.findOneAndUpdate({ title: { $regex: new RegExp(`^${item.title}$`, 'i') } }, updateData, { upsert: true });
+            }
+        }
+
+        if (fs.existsSync(irlPath)) {
+            const irlData = JSON.parse(fs.readFileSync(irlPath, 'utf8'));
+            for (const item of irlData) {
+                let existing = await IrlBook.findOne({ title: { $regex: new RegExp(`^${item.title}$`, 'i') } });
+                let imageUrl = item.image || (existing ? existing.image : null);
+                if (!imageUrl) {
+                    if (imageCache[item.title.toLowerCase()]) {
+                        imageUrl = imageCache[item.title.toLowerCase()];
+                    } else {
+                        const searched = await searchImage(item.title, 'book');
+                        if (searched) {
+                            imageUrl = await uploadToImgBB(searched, item.title);
+                            imageCache[item.title.toLowerCase()] = imageUrl;
+                        }
+                    }
+                }
+                const updateData = { ...item, image: imageUrl, updatedAt: new Date().toISOString() };
+                delete updateData.id;
+                await IrlBook.findOneAndUpdate({ title: { $regex: new RegExp(`^${item.title}$`, 'i') } }, updateData, { upsert: true });
+            }
+        }
+
+        res.json({ success: true, message: 'Sync completed successfully' });
+    } catch (err) {
+        console.error('Sync failed:', err);
+        res.status(500).json({ success: false, message: 'Sync failed', error: err.message });
+    }
+});
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../client/dist')));
 
