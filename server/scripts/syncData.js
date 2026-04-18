@@ -131,6 +131,31 @@ async function sync() {
             }
         }
 
+        // 3. Catch any remaining items in DB missing images
+        console.log('Checking for remaining items in DB missing images...');
+        
+        const mediaMissing = await Media.find({ $or: [{ image: null }, { image: '' }] });
+        for (const item of mediaMissing) {
+            console.log(`Searching image for Media: ${item.title}...`);
+            const searched = await searchImage(item.title, item.type);
+            if (searched) {
+                const imageUrl = await uploadToImgBB(searched, item.title);
+                item.image = imageUrl;
+                await item.save();
+            }
+        }
+
+        const booksMissing = await IrlBook.find({ $or: [{ image: null }, { image: '' }] });
+        for (const item of booksMissing) {
+            console.log(`Searching image for Book: ${item.title}...`);
+            const searched = await searchImage(item.title, 'book');
+            if (searched) {
+                const imageUrl = await uploadToImgBB(searched, item.title);
+                item.image = imageUrl;
+                await item.save();
+            }
+        }
+
         console.log('Sync completed successfully!');
     } catch (err) {
         console.error('Sync failed:', err);
