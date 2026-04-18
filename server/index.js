@@ -367,7 +367,12 @@ if (process.env.NODE_ENV === 'production') {
         if (req.path.startsWith('/api')) {
             return next();
         }
-        res.sendFile(path.resolve(__dirname, '../client', 'dist', 'index.html'));
+        const indexPath = path.resolve(__dirname, '../client', 'dist', 'index.html');
+        if (fs.existsSync(indexPath)) {
+            res.sendFile(indexPath);
+        } else {
+            res.status(404).send('Frontend build not found. Did you run "npm run build"?');
+        }
     });
 }
 
