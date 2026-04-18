@@ -27,13 +27,14 @@ const getYouTubeId = (url) => {
 };
 
 const MediaCard = ({ item, onDelete, onEdit }) => {
-  const { title, type, genres, rating, review, image, category } = item;
+  const { title, type, genres, rating, review, image, category, author, year, pageCount, description, link } = item;
   const [copied, setCopied] = useState(false);
   
   const TypeIcon = typeIcons[type] || <Film size={16} />;
   const color = typeColors[type] || 'var(--primary)';
   
   const ytId = type === 'youtube' ? getYouTubeId(image) : null;
+  const itemLink = link || (type === 'youtube' ? image : null);
 
   return (
     <div className="glass-card" style={{ 
@@ -41,7 +42,7 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
       flexDirection: 'column', 
       overflow: 'hidden', 
       position: 'relative',
-      height: '380px'
+      height: '420px' // Increased height for more info
     }}>
       {/* Action Buttons (visible on hover) */}
       <div 
@@ -152,18 +153,18 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
       </div>
 
       {/* Content Area */}
-      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1, overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-            {type === 'youtube' && ytId ? (
+            {itemLink ? (
               <a 
-                href={`https://www.youtube.com/watch?v=${ytId}`} 
+                href={itemLink} 
                 target="_blank" 
                 rel="noreferrer"
                 style={{ fontSize: '1.1rem', margin: 0, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-main)', textDecoration: 'none', transition: 'color 0.2s' }}
                 onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-rose)'}
                 onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-main)'}
-                title="Open on YouTube"
+                title="Open Link"
               >
                 <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{title}</span>
                 <ExternalLink size={16} style={{ flexShrink: 0 }} />
@@ -174,40 +175,54 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
               </h3>
             )}
             
-            {type !== 'youtube' && (
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigator.clipboard.writeText(title);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }}
-                style={{ background: 'transparent', color: copied ? 'var(--accent-cyan)' : 'var(--text-muted)', border: 'none', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
-                title="Copy Title"
-              >
-                {copied ? <Check size={16} /> : <Copy size={16} />}
-              </button>
-            )}
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(title);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
+              style={{ background: 'transparent', color: copied ? 'var(--accent-cyan)' : 'var(--text-muted)', border: 'none', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+              title="Copy Title"
+            >
+              {copied ? <Check size={16} /> : <Copy size={16} />}
+            </button>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--primary)', padding: '4px 8px', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.9rem' }}>
             {rating} <Star size={12} fill="currentColor" />
           </div>
         </div>
 
+        {/* Extra Info (Author, Year, Pages) */}
+        {(author || year || pageCount) && (
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+            {author && <span style={{ fontWeight: '600' }}>{author}</span>}
+            {year && <span>• {year}</span>}
+            {pageCount && <span>• {pageCount}</span>}
+          </div>
+        )}
+
         {/* Genres */}
         {genres && genres.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
             {genres.slice(0, 3).map((g, i) => (
-              <span key={i} style={{ fontSize: '0.75rem', color: 'var(--accent-cyan)', background: 'rgba(34, 211, 238, 0.1)', padding: '2px 8px', borderRadius: '10px' }}>
+              <span key={i} style={{ fontSize: '0.7rem', color: 'var(--accent-cyan)', background: 'rgba(34, 211, 238, 0.1)', padding: '1px 6px', borderRadius: '8px' }}>
                 {g}
               </span>
             ))}
           </div>
         )}
 
+        {/* Description */}
+        {description && (
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '12px' }}>
+            {description}
+          </p>
+        )}
+
         {/* Review Snippet */}
         {review && (
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginTop: 'auto' }}>
+          <p style={{ fontSize: '0.85rem', color: 'white', opacity: 0.9, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginTop: 'auto', borderLeft: '2px solid var(--primary)', paddingLeft: '8px', fontStyle: 'italic' }}>
             "{review}"
           </p>
         )}

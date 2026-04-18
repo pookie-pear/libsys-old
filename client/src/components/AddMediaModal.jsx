@@ -9,7 +9,15 @@ const AddMediaModal = ({ isOpen, onClose, onSave, initialData }) => {
     rating: 0,
     review: '',
     image: '',
-    category: 'completed'
+    category: 'completed',
+    author: '',
+    publisher: '',
+    isbn: '',
+    year: '',
+    language: '',
+    pageCount: '',
+    description: '',
+    link: ''
   });
   const [hoverRating, setHoverRating] = useState(0);
 
@@ -17,10 +25,34 @@ const AddMediaModal = ({ isOpen, onClose, onSave, initialData }) => {
     if (initialData) {
       setFormData({
         ...initialData,
-        genres: Array.isArray(initialData.genres) ? initialData.genres.join(', ') : ''
+        genres: Array.isArray(initialData.genres) ? initialData.genres.join(', ') : (initialData.genre || ''),
+        author: initialData.author || '',
+        publisher: initialData.publisher || '',
+        isbn: initialData.isbn || '',
+        year: initialData.year || '',
+        language: initialData.language || '',
+        pageCount: initialData.pageCount || '',
+        description: initialData.description || '',
+        link: initialData.link || ''
       });
     } else {
-      setFormData({ title: '', type: 'movie', genres: '', rating: 0, review: '', image: '', category: 'completed' });
+      setFormData({ 
+        title: '', 
+        type: 'movie', 
+        genres: '', 
+        rating: 0, 
+        review: '', 
+        image: '', 
+        category: 'completed',
+        author: '',
+        publisher: '',
+        isbn: '',
+        year: '',
+        language: '',
+        pageCount: '',
+        description: '',
+        link: ''
+      });
     }
   }, [initialData, isOpen]);
 
@@ -154,12 +186,54 @@ const AddMediaModal = ({ isOpen, onClose, onSave, initialData }) => {
           </div>
 
           <div>
-            <label style={labelStyle}>Image URL or YouTube Link (Optional)</label>
+            <label style={labelStyle}>Image URL (Optional)</label>
             <input type="url" name="image" value={formData.image} onChange={handleChange} style={inputStyle} placeholder="https://..." />
           </div>
 
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div>
+              <label style={labelStyle}>Author / Artist</label>
+              <input type="text" name="author" value={formData.author} onChange={handleChange} style={inputStyle} placeholder="Director, Author, etc." />
+            </div>
+            <div>
+              <label style={labelStyle}>Publisher / Studio</label>
+              <input type="text" name="publisher" value={formData.publisher} onChange={handleChange} style={inputStyle} placeholder="Publisher" />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+            <div>
+              <label style={labelStyle}>ISBN / ID</label>
+              <input type="text" name="isbn" value={formData.isbn} onChange={handleChange} style={inputStyle} placeholder="ISBN" />
+            </div>
+            <div>
+              <label style={labelStyle}>Year</label>
+              <input type="text" name="year" value={formData.year} onChange={handleChange} style={inputStyle} placeholder="2024" />
+            </div>
+            <div>
+              <label style={labelStyle}>Pages/Duration</label>
+              <input type="text" name="pageCount" value={formData.pageCount} onChange={handleChange} style={inputStyle} placeholder="320 or 2h" />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div>
+              <label style={labelStyle}>Language</label>
+              <input type="text" name="language" value={formData.language} onChange={handleChange} style={inputStyle} placeholder="English" />
+            </div>
+            <div>
+              <label style={labelStyle}>Link (Optional)</label>
+              <input type="url" name="link" value={formData.link} onChange={handleChange} style={inputStyle} placeholder="https://imdb.com/..." />
+            </div>
+          </div>
+
           <div>
-            <label style={labelStyle}>Review / Notes</label>
+            <label style={labelStyle}>Description / Summary</label>
+            <textarea name="description" value={formData.description} onChange={handleChange} style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} placeholder="Plot summary..." />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Personal Review / Notes</label>
             <textarea name="review" value={formData.review} onChange={handleChange} style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }} placeholder="What did you think?" />
           </div>
 

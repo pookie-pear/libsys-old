@@ -16,11 +16,15 @@ const IrLibrary = () => {
   const [newTitle, setNewTitle] = useState('');
   const [newAuthor, setNewAuthor] = useState('');
   const [newCopies, setNewCopies] = useState(1);
+  const [newImage, setNewImage] = useState('');
+  const [newGenre, setNewGenre] = useState('');
+  const [newIsbn, setNewIsbn] = useState('');
 
   // Modal for checkout
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [checkoutBookId, setCheckoutBookId] = useState(null);
   const [borrowerName, setBorrowerName] = useState('');
+  const [borrowerEmail, setBorrowerEmail] = useState('');
   const [dueDate, setDueDate] = useState('');
 
   const fetchBooks = async () => {
@@ -61,7 +65,10 @@ const IrLibrary = () => {
         body: JSON.stringify({ 
           title: newTitle, 
           author: newAuthor,
-          totalCopies: newCopies 
+          totalCopies: newCopies,
+          image: newImage,
+          genre: newGenre,
+          isbn: newIsbn
         })
       });
       const data = await res.json();
@@ -69,6 +76,9 @@ const IrLibrary = () => {
       setNewTitle('');
       setNewAuthor('');
       setNewCopies(1);
+      setNewImage('');
+      setNewGenre('');
+      setNewIsbn('');
     } catch (err) {
       console.error(err);
     }
@@ -127,7 +137,8 @@ const IrLibrary = () => {
       return;
     }
     setCheckoutBookId(id);
-    setBorrowerName('');
+    setBorrowerName(user.name || user.email.split('@')[0]);
+    setBorrowerEmail(user.email || '');
     setDueDate('');
     setIsCheckoutModalOpen(true);
   };
@@ -148,6 +159,8 @@ const IrLibrary = () => {
     try {
       const newBorrowerItem = {
         id: Date.now().toString(),
+        userId: user.id, // Linked shared user ID
+        userEmail: borrowerEmail || user.email,
         name: borrowerName,
         dueDate: dueDate
       };
@@ -318,28 +331,48 @@ const IrLibrary = () => {
               <h2 style={{ marginBottom: '16px', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Book size={20} color="var(--primary)" /> Add to Inventory
               </h2>
-              <form onSubmit={handleAddBook} style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <input 
-                  type="text" placeholder="Book Title" 
-                  value={newTitle} onChange={(e) => setNewTitle(e.target.value)} 
-                  style={{ ...inputStyle, flex: 2, minWidth: '200px' }} required
-                />
-                <input 
-                  type="text" placeholder="Author" 
-                  value={newAuthor} onChange={(e) => setNewAuthor(e.target.value)} 
-                  style={{ ...inputStyle, flex: 1, minWidth: '150px' }} required
-                />
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(15, 23, 42, 0.6)', padding: '0 12px', borderRadius: '8px', border: '1px solid var(--glass-border)'}}>
-                  <span style={{color: 'var(--text-muted)'}}>Copies:</span>
+              <form onSubmit={handleAddBook} style={{ display: 'flex', gap: '16px', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
                   <input 
-                    type="number" min="1"
-                    value={newCopies} onChange={(e) => setNewCopies(parseInt(e.target.value) || 1)} 
-                    style={{ ...inputStyle, width: '70px', border: 'none', background: 'transparent' }} required
+                    type="text" placeholder="Book Title *" 
+                    value={newTitle} onChange={(e) => setNewTitle(e.target.value)} 
+                    style={{ ...inputStyle, flex: 2, minWidth: '200px' }} required
                   />
+                  <input 
+                    type="text" placeholder="Author *" 
+                    value={newAuthor} onChange={(e) => setNewAuthor(e.target.value)} 
+                    style={{ ...inputStyle, flex: 1, minWidth: '150px' }} required
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(15, 23, 42, 0.6)', padding: '0 12px', borderRadius: '8px', border: '1px solid var(--glass-border)'}}>
+                    <span style={{color: 'var(--text-muted)'}}>Copies:</span>
+                    <input 
+                      type="number" min="1"
+                      value={newCopies} onChange={(e) => setNewCopies(parseInt(e.target.value) || 1)} 
+                      style={{ ...inputStyle, width: '70px', border: 'none', background: 'transparent' }} required
+                    />
+                  </div>
                 </div>
-                <button type="submit" style={{ padding: '10px 24px', background: 'var(--primary)', color: 'white', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <PlusCircle size={18} /> Add
-                </button>
+                
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <input 
+                    type="url" placeholder="Image URL (Optional)" 
+                    value={newImage} onChange={(e) => setNewImage(e.target.value)} 
+                    style={{ ...inputStyle, flex: 2, minWidth: '200px' }}
+                  />
+                  <input 
+                    type="text" placeholder="Genre (Optional)" 
+                    value={newGenre} onChange={(e) => setNewGenre(e.target.value)} 
+                    style={{ ...inputStyle, flex: 1, minWidth: '150px' }}
+                  />
+                  <input 
+                    type="text" placeholder="ISBN (Optional)" 
+                    value={newIsbn} onChange={(e) => setNewIsbn(e.target.value)} 
+                    style={{ ...inputStyle, flex: 1, minWidth: '150px' }}
+                  />
+                  <button type="submit" style={{ padding: '10px 24px', background: 'var(--primary)', color: 'white', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <PlusCircle size={18} /> Add
+                  </button>
+                </div>
               </form>
             </section>
           )}
@@ -427,7 +460,10 @@ const IrLibrary = () => {
                 allBorrowedItems.map((item, idx) => (
                   <tr key={`${item.bookId}-${idx}`} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                     <td style={{ padding: '16px' }}><strong>{item.title}</strong></td>
-                    <td style={{ padding: '16px' }}>{item.borrower.name}</td>
+                    <td style={{ padding: '16px' }}>
+                      <div style={{ fontWeight: 'bold' }}>{item.borrower.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.borrower.userEmail}</div>
+                    </td>
                     <td style={{ padding: '16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Calendar size={14} />
@@ -465,6 +501,15 @@ const IrLibrary = () => {
                 <input 
                   type="text" required value={borrowerName} 
                   onChange={(e) => setBorrowerName(e.target.value)} 
+                  style={{ ...inputStyle, width: '100%' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Borrower Email (Linked Account)</label>
+                <input 
+                  type="email" value={borrowerEmail} 
+                  onChange={(e) => setBorrowerEmail(e.target.value)} 
+                  placeholder="Linked account email"
                   style={{ ...inputStyle, width: '100%' }}
                 />
               </div>

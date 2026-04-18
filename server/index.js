@@ -135,23 +135,43 @@ const connectToDB = async () => {
 
 connectToDB();
 
-// User Schema & Model
+// User DB Connection (Separate for shared services)
+let userConn;
+try {
+  userConn = mongoose.createConnection(process.env.USER_DB_URI);
+  userConn.on('connected', () => console.log('User DB Connected (Shared)'));
+  userConn.on('error', (err) => console.error('User DB Connection error:', err));
+} catch (err) {
+  console.error('Failed to create User DB connection:', err);
+}
+
+// User Schema & Model (Using shared user database)
 const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true }
 }, { timestamps: true });
-const User = mongoose.model('User', userSchema);
+const User = userConn ? userConn.model('User', userSchema) : mongoose.model('User', userSchema);
 
 // Media Schema & Model (Movies/YouTube/etc)
 const mediaSchema = new mongoose.Schema({
     title: { type: String, required: true },
-    type: { type: String, enum: ['movie', 'series', 'youtube'], required: true },
+    type: { type: String, enum: ['movie', 'series', 'youtube', 'book', 'game', 'short'], required: true },
     image: String,
-    genre: String,
+    link: String,
+    author: String,
+    publisher: String,
+    isbn: String,
+    year: String,
+    language: String,
+    pageCount: Number,
+    genre: String, // Kept for legacy
+    genres: [String],
     rating: Number,
     description: String,
+    review: String,
     status: { type: String, default: 'Available' },
+    category: { type: String, default: 'completed' }, // completed, to-watch, reading, etc.
     createdAt: { type: String, default: () => new Date().toISOString() },
     updatedAt: { type: String, default: () => new Date().toISOString() }
 }, { timestamps: true });
@@ -159,7 +179,9 @@ const Media = mongoose.model('Media', mediaSchema);
 
 // IRL Book Schema & Model
 const borrowerSchema = new mongoose.Schema({
-    id: String,
+    id: String, // Local borrower ID
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Linked shared user ID
+    userEmail: String,
     name: String,
     dueDate: String,
     checkoutDate: { type: String, default: () => new Date().toISOString() }
@@ -168,6 +190,15 @@ const borrowerSchema = new mongoose.Schema({
 const irlBookSchema = new mongoose.Schema({
     title: { type: String, required: true },
     author: { type: String, required: true },
+    image: String,
+    genre: String,
+    genres: [String],
+    description: String,
+    isbn: String,
+    language: String,
+    publisher: String,
+    year: String,
+    pageCount: Number,
     totalCopies: { type: Number, default: 1 },
     borrowers: [borrowerSchema],
     createdAt: { type: String, default: () => new Date().toISOString() },
