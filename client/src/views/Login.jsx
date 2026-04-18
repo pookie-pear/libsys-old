@@ -13,11 +13,13 @@ const Login = () => {
   const { login, register, verifySSO } = useAuth();
   const navigate = useNavigate();
 
+  const UNILOGIN_URL = import.meta.env.VITE_UNILOGIN_URL || 'http://localhost:5001';
+
   useEffect(() => {
-    // 1. Check if there's an active UniLogin session on port 5001
+    // 1. Check if there's an active UniLogin session
     const checkUnilSession = async () => {
       try {
-        const res = await fetch('http://localhost:5001/api/me', { credentials: 'include' });
+        const res = await fetch(`${UNILOGIN_URL}/api/me`, { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();
           setUnilUser(data.data);
@@ -54,7 +56,7 @@ const Login = () => {
   const handleUniLoginSSO = async () => {
     setError('');
     const redirectUri = encodeURIComponent(window.location.origin + '/login');
-    window.location.href = `http://localhost:5001/api/sso/authorize?redirect_uri=${redirectUri}`;
+    window.location.href = `${UNILOGIN_URL}/api/sso/authorize?redirect_uri=${redirectUri}`;
   };
 
 

@@ -25,13 +25,37 @@ const PORT = process.env.PORT || 5000;
 const DATA_FILE = path.join(__dirname, '../data/library.json');
 const IRL_DATA_FILE = path.join(__dirname, '../data/irl_library.json');
 
+// Ensure data directory and files exist
+const dataDir = path.join(__dirname, '../data');
+if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+}
+if (!fs.existsSync(DATA_FILE)) {
+    fs.writeFileSync(DATA_FILE, '[]', 'utf8');
+}
+if (!fs.existsSync(IRL_DATA_FILE)) {
+    fs.writeFileSync(IRL_DATA_FILE, '[]', 'utf8');
+}
+
 // Middleware
 app.use(cors({
     origin: (origin, callback) => {
         // Allow requests with no origin (like mobile apps or curl)
         if (!origin) return callback(null, true);
-        // Allow any localhost origin for dev flexibility
-        if (origin.startsWith('http://localhost:')) return callback(null, true);
+        
+        const allowedOrigins = [
+            'http://localhost:5173',
+            'http://localhost:5000',
+            'http://localhost:5001'
+        ];
+        
+        if (
+            allowedOrigins.includes(origin) || 
+            origin.startsWith('http://localhost:') || 
+            origin.endsWith('.onrender.com')
+        ) {
+            return callback(null, true);
+        }
         callback(new Error('Not allowed by CORS'));
     },
     credentials: true

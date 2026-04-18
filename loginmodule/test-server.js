@@ -21,7 +21,20 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5001', 'http://localhost:5002', 'http://localhost:5003', 'http://localhost:5173'],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const allowedOrigins = [
+      'http://localhost:5001',
+      'http://localhost:5002',
+      'http://localhost:5003',
+      'http://localhost:5173',
+      'http://localhost:5000'
+    ];
+    if (allowedOrigins.includes(origin) || origin.endsWith('.onrender.com')) {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -88,8 +101,8 @@ app.post('/api/register', async (req, res, next) => {
     // Set cookie for browser-based SSO
     res.cookie('unil_session', token, {
       httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
-      sameSite: 'lax',
+      secure: true, // Required for sameSite: 'none'
+      sameSite: 'none', // Required for cross-site cookie sharing
       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     });
 
@@ -129,8 +142,8 @@ app.post('/api/login', async (req, res, next) => {
     // Set cookie for browser-based SSO
     res.cookie('unil_session', token, {
       httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
-      sameSite: 'lax',
+      secure: true, // Required for sameSite: 'none'
+      sameSite: 'none', // Required for cross-site cookie sharing
       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     });
 
