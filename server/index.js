@@ -22,20 +22,6 @@ const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const DATA_FILE = path.join(__dirname, '../data/library.json');
-const IRL_DATA_FILE = path.join(__dirname, '../data/irl_library.json');
-
-// Ensure data directory and files exist
-const dataDir = path.join(__dirname, '../data');
-if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-}
-if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, '[]', 'utf8');
-}
-if (!fs.existsSync(IRL_DATA_FILE)) {
-    fs.writeFileSync(IRL_DATA_FILE, '[]', 'utf8');
-}
 
 // Middleware
 app.use(cors({
@@ -154,28 +140,40 @@ const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true }
-});
+}, { timestamps: true });
 const User = mongoose.model('User', userSchema);
 
-// Helper to read data
-const readData = (file = DATA_FILE) => {
-    try {
-        const data = fs.readFileSync(file, 'utf8');
-        return JSON.parse(data);
-    } catch (err) {
-        console.error('Error reading data file:', err);
-        return [];
-    }
-};
+// Media Schema & Model (Movies/YouTube/etc)
+const mediaSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    type: { type: String, enum: ['movie', 'series', 'youtube'], required: true },
+    image: String,
+    genre: String,
+    rating: Number,
+    description: String,
+    status: { type: String, default: 'Available' },
+    createdAt: { type: String, default: () => new Date().toISOString() },
+    updatedAt: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+const Media = mongoose.model('Media', mediaSchema);
 
-// Helper to write data
-const writeData = (data, file = DATA_FILE) => {
-    try {
-        fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
-    } catch (err) {
-        console.error('Error writing data file:', err);
-    }
-};
+// IRL Book Schema & Model
+const borrowerSchema = new mongoose.Schema({
+    id: String,
+    name: String,
+    dueDate: String,
+    checkoutDate: { type: String, default: () => new Date().toISOString() }
+});
+
+const irlBookSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    author: { type: String, required: true },
+    totalCopies: { type: Number, default: 1 },
+    borrowers: [borrowerSchema],
+    createdAt: { type: String, default: () => new Date().toISOString() },
+    updatedAt: { type: String, default: () => new Date().toISOString() }
+}, { timestamps: true });
+const IrlBook = mongoose.model('IrlBook', irlBookSchema);
 
 // --- Auth Endpoints ---
 
@@ -269,98 +267,108 @@ app.post('/api/auth/logout', (req, res) => {
 });
 
 // --- Protected API Endpoints ---
-// Already defined above as 'auth'
 
-app.get('/api/media', (req, res) => {
-    const data = readData();
-    res.json(data);
-});
-
-app.post('/api/media', auth, (req, res) => {
-    const data = readData();
-    const newItem = {
-        id: Date.now().toString(),
-        ...req.body,
-        createdAt: new Date().toISOString()
-    };
-    data.push(newItem);
-    writeData(data);
-    res.status(201).json(newItem);
-});
-
-app.put('/api/media/:id', auth, (req, res) => {
-    const { id } = req.params;
-    console.log(`DEBUG: PUT /api/media/${id} - Body:`, req.body);
-    let data = readData();
-    const index = data.findIndex(item => item.id === id);
-    
-    if (index !== -1) {
-        data[index] = { ...data[index], ...req.body, updatedAt: new Date().toISOString() };
-        writeData(data);
-        res.json(data[index]);
-    } else {
-        res.status(404).json({ message: `Item with ID ${id} not found` });
+app.get('/api/media', async (req, res) => {
+    try {
+        const media = await Media.find().sort({ createdAt: -1 });
+        // Map _id to id for frontend compatibility
+        const formattedMedia = media.map(m => ({ ...m._doc, id: m._id }));
+        res.json(formattedMedia);
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching media' });
     }
 });
 
-app.delete('/api/media/:id', auth, (req, res) => {
-    const { id } = req.params;
-    let data = readData();
-    const newData = data.filter(item => item.id !== id);
-    
-    if (data.length !== newData.length) {
-        writeData(newData);
-        res.json({ message: 'Item deleted' });
-    } else {
-        res.status(404).json({ message: `Item with ID ${id} not found` });
+app.post('/api/media', auth, async (req, res) => {
+    try {
+        const newMedia = await Media.create(req.body);
+        res.status(201).json({ ...newMedia._doc, id: newMedia._id });
+    } catch (err) {
+        res.status(400).json({ message: 'Error adding media' });
+    }
+});
+
+app.put('/api/media/:id', auth, async (req, res) => {
+    try {
+        const updatedMedia = await Media.findByIdAndUpdate(
+            req.params.id, 
+            { ...req.body, updatedAt: new Date().toISOString() }, 
+            { new: true }
+        );
+        if (updatedMedia) {
+            res.json({ ...updatedMedia._doc, id: updatedMedia._id });
+        } else {
+            res.status(404).json({ message: 'Media not found' });
+        }
+    } catch (err) {
+        res.status(400).json({ message: 'Error updating media' });
+    }
+});
+
+app.delete('/api/media/:id', auth, async (req, res) => {
+    try {
+        const deletedMedia = await Media.findByIdAndDelete(req.params.id);
+        if (deletedMedia) {
+            res.json({ message: 'Item deleted' });
+        } else {
+            res.status(404).json({ message: 'Media not found' });
+        }
+    } catch (err) {
+        res.status(400).json({ message: 'Error deleting media' });
     }
 });
 
 // --- IRL Library Endpoints ---
 
-app.get('/api/irl-books', (req, res) => {
-    const data = readData(IRL_DATA_FILE);
-    res.json(data);
-});
-
-app.post('/api/irl-books', auth, (req, res) => {
-    const data = readData(IRL_DATA_FILE);
-    const newItem = {
-        id: Date.now().toString(),
-        ...req.body,
-        totalCopies: parseInt(req.body.totalCopies) || 1,
-        borrowers: [], // Array of { id, name, dueDate, checkoutDate }
-        createdAt: new Date().toISOString()
-    };
-    data.push(newItem);
-    writeData(data, IRL_DATA_FILE);
-    res.status(201).json(newItem);
-});
-
-app.put('/api/irl-books/:id', auth, (req, res) => {
-    const { id } = req.params;
-    let data = readData(IRL_DATA_FILE);
-    const index = data.findIndex(item => item.id === id);
-    
-    if (index !== -1) {
-        data[index] = { ...data[index], ...req.body, updatedAt: new Date().toISOString() };
-        writeData(data, IRL_DATA_FILE);
-        res.json(data[index]);
-    } else {
-        res.status(404).json({ message: 'Book not found' });
+app.get('/api/irl-books', async (req, res) => {
+    try {
+        const books = await IrlBook.find().sort({ createdAt: -1 });
+        const formattedBooks = books.map(b => ({ ...b._doc, id: b._id }));
+        res.json(formattedBooks);
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching books' });
     }
 });
 
-app.delete('/api/irl-books/:id', auth, (req, res) => {
-    const { id } = req.params;
-    let data = readData(IRL_DATA_FILE);
-    const newData = data.filter(item => item.id !== id);
-    
-    if (data.length !== newData.length) {
-        writeData(newData, IRL_DATA_FILE);
-        res.json({ message: 'Book deleted' });
-    } else {
-        res.status(404).json({ message: 'Book not found' });
+app.post('/api/irl-books', auth, async (req, res) => {
+    try {
+        const newBook = await IrlBook.create({
+            ...req.body,
+            borrowers: []
+        });
+        res.status(201).json({ ...newBook._doc, id: newBook._id });
+    } catch (err) {
+        res.status(400).json({ message: 'Error adding book' });
+    }
+});
+
+app.put('/api/irl-books/:id', auth, async (req, res) => {
+    try {
+        const updatedBook = await IrlBook.findByIdAndUpdate(
+            req.params.id, 
+            { ...req.body, updatedAt: new Date().toISOString() }, 
+            { new: true }
+        );
+        if (updatedBook) {
+            res.json({ ...updatedBook._doc, id: updatedBook._id });
+        } else {
+            res.status(404).json({ message: 'Book not found' });
+        }
+    } catch (err) {
+        res.status(400).json({ message: 'Error updating book' });
+    }
+});
+
+app.delete('/api/irl-books/:id', auth, async (req, res) => {
+    try {
+        const deletedBook = await IrlBook.findByIdAndDelete(req.params.id);
+        if (deletedBook) {
+            res.json({ message: 'Book deleted' });
+        } else {
+            res.status(404).json({ message: 'Book not found' });
+        }
+    } catch (err) {
+        res.status(400).json({ message: 'Error deleting book' });
     }
 });
 
