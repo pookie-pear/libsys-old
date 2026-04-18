@@ -7,7 +7,6 @@ const Login = () => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [unilUser, setUnilUser] = useState(null);
   const [checkingSession, setCheckingSession] = useState(true);
   
   const { login, register, verifySSO } = useAuth();
@@ -22,7 +21,11 @@ const Login = () => {
         const res = await fetch(`${UNILOGIN_URL}/api/me`, { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();
-          setUnilUser(data.data);
+          // If session found, automatically initiate SSO redirect
+          if (data.success && data.data) {
+            handleUniLoginSSO();
+            return;
+          }
         }
       } catch (err) {
         console.error('Error checking UniLogin session:', err);
@@ -115,68 +118,21 @@ const Login = () => {
           {isLogin ? 'Welcome Back' : 'Create Account'}
         </h1>
 
-        {checkingSession ? (
-          <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
-            Checking session...
-          </div>
-        ) : unilUser ? (
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ 
-              width: '80px', 
-              height: '80px', 
-              background: 'var(--primary)', 
+        {checkingSession || loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+            <div className="spinner" style={{ 
+              width: '40px', 
+              height: '40px', 
+              border: '4px solid rgba(255,255,255,0.1)', 
+              borderTop: '4px solid var(--primary)', 
               borderRadius: '50%', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
               margin: '0 auto 20px',
-              fontSize: '2rem',
-              color: 'white',
-              fontWeight: 'bold'
-            }}>
-              {unilUser.name ? unilUser.name[0].toUpperCase() : unilUser.email[0].toUpperCase()}
-            </div>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>
-              Detected UniLogin session for <strong>{unilUser.name || unilUser.email}</strong>
-            </p>
-            
-            <button
-              onClick={handleUniLoginSSO}
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '14px',
-                background: 'var(--primary)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                fontWeight: 'bold',
-                fontSize: '1rem',
-                cursor: 'pointer',
-                marginBottom: '16px',
-                transition: 'all 0.2s',
-                opacity: loading ? 0.7 : 1
-              }}
-            >
-              {loading ? 'Logging in...' : `Continue as ${unilUser.name || unilUser.email.split('@')[0]}`}
-            </button>
-
-            <button
-              onClick={() => setUnilUser(null)}
-              style={{
-                width: '100%',
-                padding: '14px',
-                background: 'transparent',
-                color: 'var(--text-muted)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '12px',
-                fontWeight: '600',
-                fontSize: '0.9rem',
-                cursor: 'pointer'
-              }}
-            >
-              Login as different user
-            </button>
+              animation: 'spin 1s linear infinite'
+            }}></div>
+            {loading ? 'Logging you in via UniLogin...' : 'Checking session...'}
+            <style>{`
+              @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            `}</style>
           </div>
         ) : (
           <>
@@ -260,38 +216,7 @@ const Login = () => {
               </button>
             </form>
 
-            <div style={{ display: 'flex', alignItems: 'center', margin: '24px 0', gap: '16px' }}>
-              <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>OR</span>
-              <div style={{ flex: 1, height: '1px', background: 'var(--glass-border)' }}></div>
-            </div>
-
-            <button
-              onClick={handleUniLoginSSO}
-              disabled={loading}
-              style={{
-                width: '100%',
-                padding: '14px',
-                background: 'transparent',
-                color: 'white',
-                border: '1px solid var(--primary)',
-                borderRadius: '12px',
-                fontWeight: 'bold',
-                fontSize: '1rem',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '12px',
-                transition: 'all 0.2s',
-                opacity: loading ? 0.7 : 1
-              }}
-            >
-              <img src="/favicon.svg" alt="Unil" style={{ width: '20px', height: '20px' }} />
-              Login with UniLogin
-            </button>
-
-            <div style={{ textAlign: 'center', marginTop: '24px' }}>
+            <div style={{ textAlign: 'center', marginTop: '32px' }}>
 
               <button
                 onClick={() => setIsLogin(!isLogin)}

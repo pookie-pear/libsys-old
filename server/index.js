@@ -225,7 +225,7 @@ app.post('/api/auth/register', checkDB, async (req, res, next) => {
       maxAge: 30 * 24 * 60 * 60 * 1000
     });
 
-    return successResponse(res, 201, { id: user._id, name: user.name, email: user.email, token }, 'User registered successfully');
+    return successResponse(res, 201, { user: { id: user._id, name: user.name, email: user.email }, token }, 'User registered successfully');
   } catch (error) { next(error); }
 });
 
