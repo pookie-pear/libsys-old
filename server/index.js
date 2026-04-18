@@ -363,7 +363,7 @@ app.get('/api/yt-title', auth, async (req, res) => {
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../client/dist')));
 
-    app.get('*', (req, res, next) => {
+    app.get('*path', (req, res, next) => {
         if (req.path.startsWith('/api')) {
             return next();
         }
