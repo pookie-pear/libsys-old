@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Book, User, Calendar, PlusCircle, Trash2, CheckCircle, Shield, ShoppingCart, LogIn, LogOut } from 'lucide-react';
+import { ArrowLeft, Book, User, Calendar, PlusCircle, Trash2, CheckCircle, Shield, ShoppingCart, LogIn, LogOut, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const API_URL = '/api/irl-books';
@@ -31,7 +31,7 @@ const IrLibrary = () => {
         }
       });
       const data = await res.json();
-      setBooks(data);
+      setBooks(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -346,3 +346,145 @@ const IrLibrary = () => {
 
           {/* Main Inventory Table */}
           <section className="glass-card" style={{ padding: '24px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--glass-border)' }}>
+                  <th style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>Book Title</th>
+                  <th style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>Author</th>
+                  <th style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>Copies</th>
+                  <th style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>Status</th>
+                  <th style={{ padding: '12px 16px', color: 'var(--text-muted)', textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr><td colSpan="5" style={{ textAlign: 'center', padding: '40px' }}>Loading inventory...</td></tr>
+                ) : books.length === 0 ? (
+                  <tr><td colSpan="5" style={{ textAlign: 'center', padding: '40px' }}>No books found in inventory.</td></tr>
+                ) : (
+                  books.map(book => {
+                    const available = book.totalCopies - (book.borrowers?.length || 0);
+                    return (
+                      <tr key={book.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <td style={{ padding: '16px' }}>
+                          <div style={{ fontWeight: 'bold' }}>{book.title}</div>
+                        </td>
+                        <td style={{ padding: '16px' }}>{book.author}</td>
+                        <td style={{ padding: '16px' }}>{available} / {book.totalCopies}</td>
+                        <td style={{ padding: '16px' }}>
+                          {available > 0 ? (
+                            <span style={{ color: 'var(--accent-cyan)', fontSize: '0.8rem', background: 'rgba(34, 211, 238, 0.1)', padding: '4px 8px', borderRadius: '4px' }}>Available</span>
+                          ) : (
+                            <span style={{ color: 'var(--accent-rose)', fontSize: '0.8rem', background: 'rgba(225, 29, 72, 0.1)', padding: '4px 8px', borderRadius: '4px' }}>All Out</span>
+                          )}
+                        </td>
+                        <td style={{ padding: '16px', textAlign: 'right' }}>
+                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                            <button 
+                              onClick={() => openCheckoutModal(book.id)}
+                              disabled={available <= 0}
+                              style={{ padding: '6px 12px', fontSize: '0.85rem', background: 'var(--primary)', color: 'white', opacity: available <= 0 ? 0.5 : 1 }}
+                            >
+                              Checkout
+                            </button>
+                            {isAdmin && (
+                              <button 
+                                onClick={() => handleDelete(book.id)}
+                                style={{ padding: '6px', background: 'rgba(225, 29, 72, 0.1)', color: 'var(--accent-rose)', border: '1px solid rgba(225, 29, 72, 0.2)' }}
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </section>
+        </>
+      ) : (
+        /* Loans View */
+        <section className="glass-card" style={{ padding: '24px' }}>
+          <h2 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <ShoppingCart size={24} color="var(--accent-cyan)" /> Active Loans
+          </h2>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--glass-border)' }}>
+                <th style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>Book</th>
+                <th style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>Borrower</th>
+                <th style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>Due Date</th>
+                <th style={{ padding: '12px 16px', color: 'var(--text-muted)', textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allBorrowedItems.length === 0 ? (
+                <tr><td colSpan="4" style={{ textAlign: 'center', padding: '40px' }}>No active loans.</td></tr>
+              ) : (
+                allBorrowedItems.map((item, idx) => (
+                  <tr key={`${item.bookId}-${idx}`} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <td style={{ padding: '16px' }}><strong>{item.title}</strong></td>
+                    <td style={{ padding: '16px' }}>{item.borrower.name}</td>
+                    <td style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Calendar size={14} />
+                        {item.borrower.dueDate || 'No date'}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px', textAlign: 'right' }}>
+                      <button 
+                        onClick={() => handleReturn(item.bookId, item.borrower.id)}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'var(--accent-cyan)', color: 'var(--bg-dark)', fontWeight: 'bold' }}
+                      >
+                        <CheckCircle size={14} /> Return
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </section>
+      )}
+
+      {/* Checkout Modal */}
+      {isCheckoutModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
+          <div className="glass-card" style={{ width: '100%', maxWidth: '400px', padding: '32px', position: 'relative' }}>
+            <button onClick={() => setIsCheckoutModalOpen(false)} style={{ position: 'absolute', top: '16px', right: '16px', background: 'transparent', color: 'var(--text-muted)' }}>
+              <X size={20} />
+            </button>
+            
+            <h2 style={{ marginBottom: '24px' }}>Checkout Book</h2>
+            <form onSubmit={handleCheckoutSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Borrower Name</label>
+                <input 
+                  type="text" required value={borrowerName} 
+                  onChange={(e) => setBorrowerName(e.target.value)} 
+                  style={{ ...inputStyle, width: '100%' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Due Date</label>
+                <input 
+                  type="date" required value={dueDate} 
+                  onChange={(e) => setDueDate(e.target.value)} 
+                  style={{ ...inputStyle, width: '100%' }}
+                />
+              </div>
+              <button type="submit" style={{ marginTop: '12px', padding: '14px', background: 'var(--primary)', color: 'white', fontWeight: 'bold' }}>
+                Confirm Checkout
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default IrLibrary;
