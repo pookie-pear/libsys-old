@@ -76,6 +76,10 @@ const IrLibrary = () => {
       navigate('/login');
       return;
     }
+
+    if (books.length >= 1000) {
+      alert('IRL Library is full (1000 items). Oldest items will be automatically replaced.');
+    }
     if (!newTitle.trim() || !newAuthor.trim() || newCopies < 1) return;
 
     try {
@@ -108,10 +112,11 @@ const IrLibrary = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!user) {
-      navigate('/login');
+    if (!user?.isAdmin) {
+      alert('Only admins can delete books from the library.');
       return;
     }
+    if (!window.confirm('Are you sure you want to delete this book?')) return;
     try {
       await fetch(`${API_URL}/${id}`, { 
         method: 'DELETE',

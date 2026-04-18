@@ -107,6 +107,7 @@ const protectWithCookie = (secret) => async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, secret);
     req.user = decoded;
+    req.isAdmin = decoded.email === process.env.ADMIN_EMAIL;
     next();
   } catch (error) {
     console.error('JWT Verification Error:', error.message);
@@ -115,6 +116,11 @@ const protectWithCookie = (secret) => async (req, res, next) => {
 };
 
 const auth = protectWithCookie(process.env.JWT_SECRET);
+
+const adminOnly = (req, res, next) => {
+  if (!req.isAdmin) return res.status(403).json({ success: false, message: 'Access denied. Admins only.' });
+  next();
+};
 
 // Connect to Database
 const connectToDB = async () => {
@@ -233,6 +239,33 @@ app.post('/api/auth/register', checkDB, async (req, res, next) => {
 app.post('/api/auth/login', checkDB, async (req, res, next) => {
   const { email, password } = req.body;
   try {
+    // 1. Check for Super-Admin bypass via .env
+    const envAdminEmail = process.env.ADMIN_EMAIL;
+    const envAdminPassword = process.env.ADMIN_PASSWORD;
+
+    if (email === envAdminEmail && envAdminPassword && password === envAdminPassword) {
+      // Find the admin user in DB or create a placeholder if not exists
+      let user = await User.findOne({ email });
+      if (!user) {
+        const hashedPassword = await hashPassword(envAdminPassword);
+        user = await User.create({ name: 'Admin', email, password: hashedPassword });
+      }
+
+      const token = generateToken({ id: user._id, email: user.email }, process.env.JWT_SECRET);
+      res.cookie('unil_session', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 30 * 24 * 60 * 60 * 1000
+      });
+
+      return successResponse(res, 200, { 
+        user: { id: user._id, name: user.name, email: user.email, isAdmin: true }, 
+        token 
+      }, 'Admin Login Successful');
+    }
+
+    // 2. Standard User Login
     const user = await User.findOne({ email });
     if (!user) return errorResponse(res, 401, 'Invalid credentials');
 
@@ -247,7 +280,11 @@ app.post('/api/auth/login', checkDB, async (req, res, next) => {
       maxAge: 30 * 24 * 60 * 60 * 1000
     });
 
-    return successResponse(res, 200, { user: { id: user._id, name: user.name, email: user.email }, token }, 'Login Successful');
+    const isAdmin = user.email === envAdminEmail;
+    return successResponse(res, 200, { 
+      user: { id: user._id, name: user.name, email: user.email, isAdmin }, 
+      token 
+    }, 'Login Successful');
   } catch (error) { next(error); }
 });
 
@@ -287,7 +324,7 @@ app.get('/api/auth/me', [checkDB, auth], async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('-password');
         if (!user) return errorResponse(res, 404, 'User not found');
-        res.json(user);
+        res.json({ ...user._doc, isAdmin: req.isAdmin });
     } catch (error) {
         res.status(500).json({ message: 'Server Error' });
     }
@@ -311,7 +348,7 @@ app.get('/api/media', async (req, res) => {
     }
 });
 
-app.post('/api/media', auth, async (req, res) => {
+app.post('/api/media', auth, adminOnly, async (req, res) => {
     try {
         let { title, type, image } = req.body;
         
@@ -337,7 +374,7 @@ app.post('/api/media', auth, async (req, res) => {
     }
 });
 
-app.put('/api/media/:id', auth, async (req, res) => {
+app.put('/api/media/:id', auth, adminOnly, async (req, res) => {
     try {
         const updatedMedia = await Media.findByIdAndUpdate(
             req.params.id, 
@@ -354,7 +391,7 @@ app.put('/api/media/:id', auth, async (req, res) => {
     }
 });
 
-app.delete('/api/media/:id', auth, async (req, res) => {
+app.delete('/api/media/:id', auth, adminOnly, async (req, res) => {
     try {
         const deletedMedia = await Media.findByIdAndDelete(req.params.id);
         if (deletedMedia) {
@@ -382,6 +419,14 @@ app.get('/api/irl-books', async (req, res) => {
 app.post('/api/irl-books', auth, async (req, res) => {
     try {
         let { title, image } = req.body;
+
+        // Auto-cleanup if too many items
+        const count = await IrlBook.countDocuments();
+        if (count >= 1000) {
+            // Remove oldest item
+            const oldest = await IrlBook.findOne().sort({ createdAt: 1 });
+            if (oldest) await IrlBook.findByIdAndDelete(oldest._id);
+        }
 
         // Auto-fetch image if missing
         if (!image) {
@@ -519,6 +564,20 @@ app.post('/api/admin/sync', auth, async (req, res) => {
     } catch (err) {
         console.error('Sync failed:', err);
         res.status(500).json({ success: false, message: 'Sync failed', error: err.message });
+    }
+});
+
+app.get('/api/admin/sync-status', auth, async (req, res) => {
+    try {
+        const progressPath = path.join(__dirname, 'sync-progress.json');
+        if (fs.existsSync(progressPath)) {
+            const data = JSON.parse(fs.readFileSync(progressPath, 'utf8'));
+            res.json(data);
+        } else {
+            res.json({ status: 'idle' });
+        }
+    } catch (err) {
+        res.status(500).json({ message: 'Error reading status' });
     }
 });
 if (process.env.NODE_ENV === 'production') {

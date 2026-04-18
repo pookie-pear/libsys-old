@@ -5,6 +5,17 @@ require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
 const IMGBB_API_KEY = process.env.IMGBB_API_KEY;
 
+// User agents to rotate
+const userAgents = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0'
+];
+
+const getRandomUA = () => userAgents[Math.floor(Math.random() * userAgents.length)];
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 /**
  * Searches for an image URL based on title and type
  * @param {string} title 
@@ -12,35 +23,33 @@ const IMGBB_API_KEY = process.env.IMGBB_API_KEY;
  * @returns {Promise<string|null>}
  */
 async function searchImage(title, type) {
-    try {
-        const query = encodeURIComponent(`${title} ${type} poster`);
-        // Use a more public/reliable search result page but parse it more carefully
-        const url = `https://www.bing.com/images/search?q=${query}&form=HDRSC2&first=1`;
-        
-        console.log(`DEBUG: Searching image for ${title} via Bing`);
-        
-        const { data } = await axios.get(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            }
-        });
-
-        // Bing image search results often contain links in 'murl' fields inside 'm' attributes
-        const matches = data.match(/murl&quot;:&quot;(https?:\/\/[^&]+)&quot;/g);
-        
-        if (matches && matches.length > 0) {
-            // Extract the URL from the match
-            const firstResult = matches[0].match(/https?:\/\/[^&]+/)[0];
-            console.log(`DEBUG: Found image result for ${title}: ${firstResult}`);
-            return firstResult;
+    // List of search engines/proxies to try in order
+    const engines = [
+        async (q) => {
+            const url = `https://www.bing.com/images/search?q=${encodeURIComponent(q)}&form=HDRSC2&first=1`;
+            const { data } = await axios.get(url, { headers: { 'User-Agent': getRandomUA() } });
+            const matches = data.match(/murl&quot;:&quot;(https?:\/\/[^&]+)&quot;/g);
+            return matches ? matches[0].match(/https?:\/\/[^&]+/)[0] : null;
+        },
+        async (q) => {
+            const url = `https://duckduckgo.com/i.js?q=${encodeURIComponent(q)}&o=json`;
+            const { data } = await axios.get(url, { headers: { 'User-Agent': getRandomUA() } });
+            return data.results && data.results.length > 0 ? data.results[0].image : null;
         }
+    ];
 
-        console.log(`DEBUG: No images found for ${title} using Bing`);
-        return null;
-    } catch (error) {
-        console.error('Error searching image:', error.message);
-        return null;
+    const query = `${title} ${type} official poster`;
+    
+    for (const engine of engines) {
+        try {
+            const result = await engine(query);
+            if (result) return result;
+            await sleep(1000 + Math.random() * 2000); // Random delay between retries
+        } catch (error) {
+            console.error(`Search engine error: ${error.message}`);
+        }
     }
+    return null;
 }
 
 /**

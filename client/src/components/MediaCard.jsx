@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Star, BookOpen, Film, Tv, Video, MonitorPlay, Trash2, Edit2, Copy, Check, ExternalLink, Gamepad2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const typeIcons = {
   book: <BookOpen size={16} />,
@@ -27,6 +28,7 @@ const getYouTubeId = (url) => {
 };
 
 const MediaCard = ({ item, onDelete, onEdit }) => {
+  const { user } = useAuth();
   const { title, type, genres, rating, review, image, category, author, year, pageCount, description, link } = item;
   const [copied, setCopied] = useState(false);
   
@@ -42,73 +44,77 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
       flexDirection: 'column', 
       overflow: 'hidden', 
       position: 'relative',
-      height: '420px' // Increased height for more info
+      marginBottom: '24px', // Space between cards in masonry
+      breakInside: 'avoid', // Prevent card from splitting across columns
     }}>
       {/* Action Buttons (visible on hover) */}
-      <div 
-        className="action-btns"
-        style={{
-          position: 'absolute',
-          top: '12px',
-          right: '12px',
-          display: 'flex',
-          gap: '8px',
-          zIndex: 10,
-          opacity: 0,
-          transition: 'all 0.2s',
-        }}>
-        <button 
-          onClick={() => onEdit(item)}
+      {user?.isAdmin && (
+        <div 
+          className="action-btns"
           style={{
-            background: 'rgba(0, 0, 0, 0.6)',
-            color: 'var(--text-muted)',
-            padding: '8px',
-            borderRadius: '50%',
+            position: 'absolute',
+            top: '12px',
+            right: '12px',
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
-        >
-          <Edit2 size={16} />
-        </button>
+            gap: '8px',
+            zIndex: 10,
+            opacity: 0,
+            transition: 'all 0.2s',
+          }}>
+          <button 
+            onClick={() => onEdit(item)}
+            style={{
+              background: 'rgba(0, 0, 0, 0.6)',
+              color: 'var(--text-muted)',
+              padding: '8px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+          >
+            <Edit2 size={16} />
+          </button>
 
-        <button 
-          onClick={() => onDelete(item.id)}
-          style={{
-            background: 'rgba(0, 0, 0, 0.6)',
-            color: 'var(--text-muted)',
-            padding: '8px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-rose)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
-        >
-          <Trash2 size={16} />
-        </button>
-      </div>
+          <button 
+            onClick={() => onDelete(item.id)}
+            style={{
+              background: 'rgba(0, 0, 0, 0.6)',
+              color: 'var(--text-muted)',
+              padding: '8px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-rose)'}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Image / Video Area */}
-      <div style={{ height: '200px', width: '100%', position: 'relative', backgroundColor: 'var(--bg-dark)' }}>
+      <div style={{ width: '100%', position: 'relative', backgroundColor: 'var(--bg-dark)', minHeight: '150px' }}>
         {type === 'youtube' && ytId ? (
-          <iframe
-            width="100%"
-            height="100%"
-            src={`https://www.youtube.com/embed/${ytId}`}
-            title={title}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          ></iframe>
+          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
+            <iframe
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+              src={`https://www.youtube.com/embed/${ytId}`}
+              title={title}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
         ) : image ? (
           <img 
             src={image} 
             alt={title} 
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }} 
             onError={(e) => {
               e.target.style.display = 'none';
               e.target.nextSibling.style.display = 'flex';
@@ -120,7 +126,7 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
         <div style={{ 
           display: (!image && type !== 'youtube') || (type === 'youtube' && !ytId) ? 'flex' : 'none', 
           width: '100%', 
-          height: '100%', 
+          height: '200px', 
           alignItems: 'center', 
           justifyContent: 'center',
           background: `linear-gradient(45deg, var(--bg-dark), ${color}33)`
@@ -153,7 +159,7 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
       </div>
 
       {/* Content Area */}
-      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1, overflowY: 'auto' }}>
+      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
             {itemLink ? (
@@ -215,14 +221,14 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
 
         {/* Description */}
         {description && (
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: '12px' }}>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '12px' }}>
             {description}
           </p>
         )}
 
         {/* Review Snippet */}
         {review && (
-          <p style={{ fontSize: '0.85rem', color: 'white', opacity: 0.9, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginTop: 'auto', borderLeft: '2px solid var(--primary)', paddingLeft: '8px', fontStyle: 'italic' }}>
+          <p style={{ fontSize: '0.85rem', color: 'white', opacity: 0.9, marginTop: 'auto', borderLeft: '2px solid var(--primary)', paddingLeft: '8px', fontStyle: 'italic' }}>
             "{review}"
           </p>
         )}

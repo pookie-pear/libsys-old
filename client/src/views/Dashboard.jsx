@@ -17,10 +17,37 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingItem, setEditingItem] = useState(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState(null);
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigate = useNavigate();
+
+  // Poll for sync progress
+  React.useEffect(() => {
+    let interval;
+    if (isSyncing) {
+      interval = setInterval(async () => {
+        try {
+          const res = await fetch('/api/admin/sync-status', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          });
+          const data = await res.json();
+          if (data.status === 'completed') {
+            setIsSyncing(false);
+            setSyncProgress(null);
+            refreshLibrary();
+            clearInterval(interval);
+          } else {
+            setSyncProgress(data);
+          }
+        } catch (err) {
+          console.error('Error fetching sync status');
+        }
+      }, 2000);
+    }
+    return () => clearInterval(interval);
+  }, [isSyncing]);
 
   const handleSync = async () => {
     if (!window.confirm('This will sync your local JSON data with the database and fetch missing images. Continue?')) return;
@@ -32,14 +59,13 @@ const Dashboard = () => {
       });
       const data = await res.json();
       if (data.success) {
-        alert('Sync completed successfully!');
-        refreshLibrary();
+        // Progress will be handled by the polling effect
       } else {
         alert('Sync failed: ' + data.message);
+        setIsSyncing(false);
       }
     } catch (err) {
       alert('Error syncing data');
-    } finally {
       setIsSyncing(false);
     }
   };
@@ -115,8 +141,44 @@ const Dashboard = () => {
           borderRadius: '16px',
           background: 'var(--bg-card)',
           backdropFilter: 'blur(12px)',
-          border: '1px solid var(--glass-border)'
+          border: '1px solid var(--glass-border)',
+          position: 'relative'
         }}>
+          {/* Progress Overlay */}
+          {syncProgress && (
+            <div style={{
+              position: 'absolute',
+              bottom: '-10px',
+              left: '24px',
+              right: '24px',
+              background: 'var(--bg-dark)',
+              padding: '12px 20px',
+              borderRadius: '12px',
+              border: '1px solid var(--primary)',
+              zIndex: 10,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--accent-cyan)' }}>
+                  {syncProgress.lastItem}
+                </span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  {syncProgress.current} / {syncProgress.total} ({syncProgress.percentage}%)
+                </span>
+              </div>
+              <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
+                <div style={{ 
+                  width: `${syncProgress.percentage}%`, 
+                  height: '100%', 
+                  background: 'var(--primary)', 
+                  transition: 'width 0.3s ease' 
+                }}></div>
+              </div>
+            </div>
+          )}
           <div>
             <h1 style={{ fontSize: '2rem', marginBottom: '8px' }}>
               {filter === 'all' ? 'Your Library' : filter.charAt(0).toUpperCase() + filter.slice(1) + 's'}

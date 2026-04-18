@@ -74,31 +74,33 @@ const Sidebar = ({ filter, setFilter, onAddClick }) => {
       </nav>
 
       <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '24px', borderTop: '1px solid var(--glass-border)' }}>
-         <button
-            onClick={onAddClick}
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              padding: '14px',
-              background: 'var(--primary)',
-              color: 'white',
-              fontSize: '1rem',
-              fontWeight: '600',
-              boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)'
-            }}
-             onMouseEnter={(e) => {
-                e.target.style.background = 'var(--primary-hover)';
-            }}
-            onMouseLeave={(e) => {
-                e.target.style.background = 'var(--primary)';
-            }}
-          >
-            <PlusCircle size={20} />
-            Add Media
-          </button>
+         {user?.isAdmin && (
+           <button
+              onClick={onAddClick}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                padding: '14px',
+                background: 'var(--primary)',
+                color: 'white',
+                fontSize: '1rem',
+                fontWeight: '600',
+                boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)'
+              }}
+               onMouseEnter={(e) => {
+                  e.target.style.background = 'var(--primary-hover)';
+              }}
+              onMouseLeave={(e) => {
+                  e.target.style.background = 'var(--primary)';
+              }}
+            >
+              <PlusCircle size={20} />
+              Add Media
+            </button>
+         )}
       </div>
     </aside>
   );

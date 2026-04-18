@@ -60,6 +60,8 @@ export const AuthProvider = ({ children }) => {
     if (res.ok) {
       setUser(data.data.user);
       localStorage.setItem('token', data.data.token);
+      // Add isAdmin check based on email from env (passed in login response or checked here)
+      // For security, it's better if the server returns isAdmin status in the login response
       return { success: true };
     }
     return { success: false, message: data.message };

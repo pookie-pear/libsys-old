@@ -20,11 +20,12 @@ const MediaGrid = ({ items, onDelete, onEdit }) => {
   }
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-      gap: '24px',
+    <div className="masonry-grid" style={{
+      columnCount: 'auto',
+      columnWidth: '280px',
+      columnGap: '24px',
       padding: '24px 0',
+      width: '100%'
     }}>
       {items.map(item => (
         <MediaCard key={item.id} item={item} onDelete={onDelete} onEdit={onEdit} />
