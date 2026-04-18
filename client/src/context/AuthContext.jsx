@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const res = await fetch('http://localhost:5000/api/auth/me', {
+      const res = await fetch('/api/auth/me', {
         headers,
         credentials: 'include' // Important for cookie-based SSO
       });
@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const res = await fetch('http://localhost:5000/api/auth/login', {
+    const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (name, email, password) => {
-    const res = await fetch('http://localhost:5000/api/auth/register', {
+    const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password }),
@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }) => {
 
   const verifySSO = async (code) => {
     try {
-      const res = await fetch('http://localhost:5000/api/auth/verify-sso', {
+      const res = await fetch('/api/auth/verify-sso', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await fetch('http://localhost:5000/api/auth/logout', { 
+    await fetch('/api/auth/logout', { 
       method: 'POST',
       credentials: 'include'
     });

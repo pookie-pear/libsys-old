@@ -43,7 +43,7 @@ const AddMediaModal = ({ isOpen, onClose, onSave, initialData }) => {
     // Auto-fetch YouTube title
     if (name === 'image' && formData.type === 'youtube' && value.includes('youtube.com') || value.includes('youtu.be')) {
       try {
-        const res = await fetch(`http://localhost:5000/api/yt-title?url=${encodeURIComponent(value)}`);
+        const res = await fetch(`/api/yt-title?url=${encodeURIComponent(value)}`);
         if (res.ok) {
           const data = await res.json();
           if (data.title) {

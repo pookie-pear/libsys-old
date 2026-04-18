@@ -359,6 +359,18 @@ app.get('/api/yt-title', auth, async (req, res) => {
     }
 });
 
+// Serve static assets in production
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../client/dist')));
+
+    app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api')) {
+            return next();
+        }
+        res.sendFile(path.resolve(__dirname, '../client', 'dist', 'index.html'));
+    });
+}
+
 // Error handling
 app.use(notFound);
 app.use(errorHandler);

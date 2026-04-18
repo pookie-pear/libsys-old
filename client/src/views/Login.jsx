@@ -53,7 +53,7 @@ const Login = () => {
 
   const handleUniLoginSSO = async () => {
     setError('');
-    const redirectUri = encodeURIComponent('http://localhost:5173/login');
+    const redirectUri = encodeURIComponent(window.location.origin + '/login');
     window.location.href = `http://localhost:5001/api/sso/authorize?redirect_uri=${redirectUri}`;
   };
 

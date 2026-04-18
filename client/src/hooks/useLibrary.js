@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const API_URL = 'http://localhost:5000/api/media';
+const API_URL = '/api/media';
 
 export function useLibrary() {
   const [library, setLibrary] = useState([]);
