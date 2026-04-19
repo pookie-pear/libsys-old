@@ -114,6 +114,7 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
           <img 
             src={image} 
             alt={title} 
+            loading="lazy"
             style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }} 
             onError={(e) => {
               e.target.style.display = 'none';
