@@ -339,30 +339,8 @@ app.post('/api/auth/logout', (req, res) => {
 
 app.get('/api/media', async (req, res) => {
     try {
-        const { page = 1, limit = 20, search = '', type = 'all', status = 'all' } = req.query;
-        
-        const query = {};
-        if (search) {
-            query.$or = [
-                { title: { $regex: search, $options: 'i' } },
-                { genres: { $regex: search, $options: 'i' } }
-            ];
-        }
-        if (type !== 'all') query.type = type;
-        if (status !== 'all') query.category = status;
-
-        const total = await Media.countDocuments(query);
-        const media = await Media.find(query)
-            .sort({ createdAt: -1 })
-            .skip((page - 1) * limit)
-            .limit(parseInt(limit));
-
-        res.json({
-            items: media.map(m => ({ ...m._doc, id: m._id })),
-            total,
-            page: parseInt(page),
-            pages: Math.ceil(total / limit)
-        });
+        const media = await Media.find().sort({ createdAt: -1 });
+        res.json(media.map(m => ({ ...m._doc, id: m._id })));
     } catch (err) {
         res.status(500).json({ message: 'Server error' });
     }

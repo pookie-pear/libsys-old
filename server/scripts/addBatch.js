@@ -136,12 +136,6 @@ async function addBatch() {
             ...booksList.map(b => ({ title: b.title, type: 'book', author: b.author }))
         ];
 
-        // Shuffle items to avoid sequential engine hits and provide random loading
-        for (let i = allItems.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [allItems[i], allItems[j]] = [allItems[j], allItems[i]];
-        }
-
         const total = allItems.length;
         console.log(`Starting processing of ${total} items...`);
         updateProgress(0, total, 'Initializing...');

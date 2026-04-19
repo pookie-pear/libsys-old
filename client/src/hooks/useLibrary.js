@@ -5,60 +5,33 @@ const API_URL = '/api/media';
 export function useLibrary() {
   const [library, setLibrary] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
 
-  const fetchLibrary = async (pageNum = 1, filters = {}) => {
+  const fetchLibrary = async () => {
     try {
-      if (pageNum === 1) setLoading(true);
-      else setLoadingMore(true);
-
-      const { search = '', type = 'all', status = 'all' } = filters;
-      const query = new URLSearchParams({
-        page: pageNum,
-        limit: 24, // Optimized chunk size
-        search,
-        type,
-        status
-      }).toString();
-
-      const res = await fetch(`${API_URL}?${query}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      setLoading(true);
+      const res = await fetch(API_URL, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
       });
-
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
-
-      if (pageNum === 1) {
-        setLibrary(data.items);
-      } else {
-        setLibrary(prev => [...prev, ...data.items]);
-      }
-
-      setTotal(data.total);
-      setHasMore(data.page < data.pages);
-      setPage(data.page);
+      setLibrary(data);
       setError(null);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
   };
 
-  const loadMore = (filters) => {
-    if (!loadingMore && hasMore) {
-      fetchLibrary(page + 1, filters);
-    }
-  };
+  useEffect(() => {
+    fetchLibrary();
+  }, []);
 
-  const refreshLibrary = (filters) => {
-    setPage(1);
-    fetchLibrary(1, filters);
+  const refreshLibrary = () => {
+    fetchLibrary();
   };
 
   const addMedia = async (media) => {

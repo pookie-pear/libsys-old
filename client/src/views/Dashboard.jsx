@@ -8,50 +8,20 @@ import { useLibrary } from '../hooks/useLibrary';
 import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
-  const { 
-    library, loading, loadingMore, error, hasMore, 
-    addMedia, updateMedia, deleteMedia, refreshLibrary, loadMore 
-  } = useLibrary();
-  
+  const { library, loading, error, addMedia, updateMedia, deleteMedia, refreshLibrary } = useLibrary();
   const { user, logout } = useAuth();
   const [filter, setFilter] = useState('all'); 
-  const [statusFilter, setStatusFilter] = useState('all'); 
-  const [ratingFilter, setRatingFilter] = useState(0); 
+  const [statusFilter, setStatusFilter] = useState('all'); // all, completed, in_progress, wishlist
+  const [ratingFilter, setRatingFilter] = useState(0); // 0 to 10
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingItem, setEditingItem] = useState(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState(null);
+  
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigate = useNavigate();
-
-  // Initial load and filter updates
-  React.useEffect(() => {
-    const timeout = setTimeout(() => {
-      refreshLibrary({ search: searchQuery, type: filter, status: statusFilter });
-    }, 300); // Debounce search
-    return () => clearTimeout(timeout);
-  }, [searchQuery, filter, statusFilter]);
-
-  // Infinite scroll observer
-  const observerTarget = React.useRef(null);
-  React.useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
-          loadMore({ search: searchQuery, type: filter, status: statusFilter });
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => observer.disconnect();
-  }, [hasMore, loading, loadingMore, searchQuery, filter, statusFilter]);
 
   // Poll for sync progress
   React.useEffect(() => {
@@ -66,7 +36,7 @@ const Dashboard = () => {
           if (data.status === 'completed') {
             setIsSyncing(false);
             setSyncProgress(null);
-            refreshLibrary({ search: searchQuery, type: filter, status: statusFilter });
+            refreshLibrary();
             clearInterval(interval);
           } else {
             setSyncProgress(data);
@@ -88,7 +58,9 @@ const Dashboard = () => {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       const data = await res.json();
-      if (!data.success) {
+      if (data.success) {
+        // Progress will be handled by the polling effect
+      } else {
         alert('Sync failed: ' + data.message);
         setIsSyncing(false);
       }
@@ -98,10 +70,15 @@ const Dashboard = () => {
     }
   };
 
-  // Client-side rating filter only (since it's granular stars)
   const filteredLibrary = useMemo(() => {
-    return library.filter(item => item.rating >= ratingFilter);
-  }, [library, ratingFilter]);
+    return library
+      .filter(item => filter === 'all' || item.type === filter)
+      .filter(item => statusFilter === 'all' || item.category === statusFilter)
+      .filter(item => item.rating >= ratingFilter)
+      .filter(item => item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                      (item.genres && item.genres.some(g => g.toLowerCase().includes(searchQuery.toLowerCase()))))
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [library, filter, statusFilter, ratingFilter, searchQuery]);
 
   const handleAddClick = () => {
     if (!user) {
@@ -380,19 +357,7 @@ const Dashboard = () => {
             <p>{error}</p>
           </div>
         ) : (
-          <>
-            <MediaGrid items={filteredLibrary} onDelete={deleteMedia} onEdit={handleEditClick} />
-            
-            {/* Infinite Scroll Trigger */}
-            <div ref={observerTarget} style={{ height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '24px' }}>
-              {loadingMore && (
-                <div style={{ width: '24px', height: '24px', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-              )}
-              {!hasMore && library.length > 0 && (
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>You've reached the end of your collection.</p>
-              )}
-            </div>
-          </>
+          <MediaGrid items={filteredLibrary} onDelete={deleteMedia} onEdit={handleEditClick} />
         )}
       </main>
 
