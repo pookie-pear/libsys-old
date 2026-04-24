@@ -19,6 +19,7 @@ const {
 } = require('../loginmodule/src/index');
 
 const jwt = require('jsonwebtoken');
+const { authenticator } = require('otplib');
 const { searchImage, uploadToImgBB } = require('./utils/imageService');
 
 const app = express();
@@ -239,16 +240,20 @@ app.post('/api/auth/register', checkDB, async (req, res, next) => {
 app.post('/api/auth/login', checkDB, async (req, res, next) => {
   const { email, password } = req.body;
   try {
-    // 1. Check for Super-Admin bypass via .env
     const envAdminEmail = process.env.ADMIN_EMAIL;
     const envAdminPassword = process.env.ADMIN_PASSWORD;
+    const adminSecret = process.env.ADMIN_2FA_SECRET;
 
+    // 1. Check for Super-Admin bypass via .env
     if (email === envAdminEmail && envAdminPassword && password === envAdminPassword) {
-      // Find the admin user in DB or create a placeholder if not exists
       let user = await User.findOne({ email });
       if (!user) {
         const hashedPassword = await hashPassword(envAdminPassword);
         user = await User.create({ name: 'Admin', email, password: hashedPassword });
+      }
+
+      if (adminSecret) {
+        return successResponse(res, 200, { twoFactorRequired: true, email: user.email }, 'Admin credentials verified. 2FA code required.');
       }
 
       const token = generateToken({ id: user._id, email: user.email }, process.env.JWT_SECRET);
@@ -259,10 +264,7 @@ app.post('/api/auth/login', checkDB, async (req, res, next) => {
         maxAge: 30 * 24 * 60 * 60 * 1000
       });
 
-      return successResponse(res, 200, { 
-        user: { id: user._id, name: user.name, email: user.email, isAdmin: true }, 
-        token 
-      }, 'Admin Login Successful');
+      return successResponse(res, 200, { user: { id: user._id, name: user.name, email: user.email, isAdmin: true }, token }, 'Admin Login Successful');
     }
 
     // 2. Standard User Login
@@ -272,38 +274,9 @@ app.post('/api/auth/login', checkDB, async (req, res, next) => {
     const isMatch = await comparePassword(password, user.password);
     if (!isMatch) return errorResponse(res, 401, 'Invalid credentials');
 
-    const token = generateToken({ id: user._id, email: user.email }, process.env.JWT_SECRET);
-    res.cookie('unil_session', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60 * 1000
-    });
-
     const isAdmin = user.email === envAdminEmail;
-    return successResponse(res, 200, { 
-      user: { id: user._id, name: user.name, email: user.email, isAdmin }, 
-      token 
-    }, 'Login Successful');
-  } catch (error) { next(error); }
-});
-
-app.post('/api/auth/verify-sso', checkDB, async (req, res, next) => {
-  const { code } = req.body;
-  try {
-    const userData = exchangeAuthCode(code, process.env.JWT_SECRET);
-    
-    // Find or create user in our local database
-    let user = await User.findOne({ email: userData.email });
-    if (!user) {
-      // Create a random password since they logged in via SSO
-      const randomPassword = Math.random().toString(36).slice(-8);
-      const hashedPassword = await hashPassword(randomPassword);
-      user = await User.create({
-        name: userData.name || userData.email.split('@')[0],
-        email: userData.email,
-        password: hashedPassword
-      });
+    if (isAdmin && adminSecret) {
+      return successResponse(res, 200, { twoFactorRequired: true, email: user.email }, 'Admin credentials verified. 2FA code required.');
     }
 
     const token = generateToken({ id: user._id, email: user.email }, process.env.JWT_SECRET);
@@ -314,7 +287,42 @@ app.post('/api/auth/verify-sso', checkDB, async (req, res, next) => {
       maxAge: 30 * 24 * 60 * 60 * 1000
     });
 
-    return successResponse(res, 200, { user: { id: user._id, name: user.name, email: user.email }, token }, 'SSO Login Successful');
+    return successResponse(res, 200, { user: { id: user._id, name: user.name, email: user.email, isAdmin }, token }, 'Login Successful');
+  } catch (error) { next(error); }
+});
+
+app.post('/api/auth/verify-sso', checkDB, async (req, res, next) => {
+  const { code } = req.body;
+  try {
+    const userData = exchangeAuthCode(code, process.env.JWT_SECRET);
+    
+    let user = await User.findOne({ email: userData.email });
+    if (!user) {
+      const randomPassword = Math.random().toString(36).slice(-8);
+      const hashedPassword = await hashPassword(randomPassword);
+      user = await User.create({
+        name: userData.name || userData.email.split('@')[0],
+        email: userData.email,
+        password: hashedPassword
+      });
+    }
+
+    const isAdmin = user.email === process.env.ADMIN_EMAIL;
+    const adminSecret = process.env.ADMIN_2FA_SECRET;
+
+    if (isAdmin && adminSecret) {
+      return successResponse(res, 200, { twoFactorRequired: true, email: user.email }, 'SSO Login verified. 2FA code required.');
+    }
+
+    const token = generateToken({ id: user._id, email: user.email }, process.env.JWT_SECRET);
+    res.cookie('unil_session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000
+    });
+
+    return successResponse(res, 200, { user: { id: user._id, name: user.name, email: user.email, isAdmin }, token }, 'SSO Login Successful');
   } catch (error) {
     return errorResponse(res, 401, 'SSO Verification Failed');
   }
@@ -333,6 +341,64 @@ app.get('/api/auth/me', [checkDB, auth], async (req, res) => {
 app.post('/api/auth/logout', (req, res) => {
   res.clearCookie('unil_session');
   return successResponse(res, 200, null, 'Logged out successfully');
+});
+
+// --- 2FA Endpoints ---
+
+app.post('/api/auth/verify-2fa', checkDB, async (req, res) => {
+    const { email, code } = req.body;
+    const envAdminEmail = process.env.ADMIN_EMAIL;
+    const adminSecret = process.env.ADMIN_2FA_SECRET;
+
+    if (!email || !code) return errorResponse(res, 400, 'Email and code required');
+    if (email !== envAdminEmail) return errorResponse(res, 403, 'Invalid request');
+    if (!adminSecret) return errorResponse(res, 400, '2FA not configured for admin');
+
+    if (!authenticator) return errorResponse(res, 500, 'TOTP Library failed to load');
+    
+    // Verify 2FA code
+    const isValid = authenticator.check(code, adminSecret);
+    if (!isValid) return errorResponse(res, 401, 'Invalid 2FA code');
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) return errorResponse(res, 404, 'Admin user not found');
+
+        const token = generateToken({ id: user._id, email: user.email }, process.env.JWT_SECRET);
+        res.cookie('unil_session', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 30 * 24 * 60 * 60 * 1000
+        });
+
+        return successResponse(res, 200, { 
+            user: { id: user._id, name: user.name, email: user.email, isAdmin: true }, 
+            token 
+        }, '2FA Verification Successful');
+    } catch (error) {
+        return errorResponse(res, 500, 'Verification failed');
+    }
+});
+
+// Helper endpoint to generate a QR code for manual setup (Admin only)
+app.get('/api/admin/setup-2fa', [checkDB, auth, adminOnly], async (req, res) => {
+    if (!authenticator) return res.status(500).json({ success: false, message: 'TOTP Library failed to load' });
+    const secret = process.env.ADMIN_2FA_SECRET || authenticator.generateSecret();
+    const otpauth = authenticator.keyuri(process.env.ADMIN_EMAIL, 'LibraryShelf', secret);
+    
+    try {
+        const QRCode = require('qrcode');
+        const qrCodeDataUrl = await QRCode.toDataURL(otpauth);
+        res.json({ 
+            success: true, 
+            secret, 
+            qrCode: qrCodeDataUrl,
+            message: 'Use this secret or QR code to setup your authenticator app.'
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Failed to generate QR code' });
+    }
 });
 
 // --- Protected API Endpoints ---

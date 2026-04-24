@@ -4,15 +4,49 @@ import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [is2FAStep, setIs2FAStep] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   
-  const { login, register, verifySSO } = useAuth();
+  const { login, register, verifySSO, setUser } = useAuth();
   const navigate = useNavigate();
 
   const UNILOGIN_URL = import.meta.env.VITE_UNILOGIN_URL || 'http://localhost:5001';
+
+  // Handle 2FA verification
+  const handle2FASubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/verify-2fa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, code: twoFactorCode })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        // Since verify-2fa sets the cookie, we just need to update local user state
+        // and navigate. The cookie will handle the rest.
+        if (data.data.user) {
+          localStorage.setItem('token', data.data.token);
+          // We need a way to update AuthContext user from here if not already handled
+          window.location.href = '/'; // Simple way to refresh state
+        }
+      } else {
+        setError(data.message || 'Invalid 2FA code');
+      }
+    } catch (err) {
+      setError('Connection error during 2FA');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     // 1. Check if there's an active UniLogin session
@@ -77,7 +111,11 @@ const Login = () => {
       }
 
       if (result.success) {
-        navigate('/');
+        if (result.data?.twoFactorRequired) {
+          setIs2FAStep(true);
+        } else {
+          navigate('/');
+        }
       } else {
         setError(result.message || 'Authentication failed');
       }
@@ -115,10 +153,10 @@ const Login = () => {
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent'
         }}>
-          {isLogin ? 'Welcome Back' : 'Create Account'}
+          {is2FAStep ? 'Security Check' : (isLogin ? 'Welcome Back' : 'Create Account')}
         </h1>
 
-        {checkingSession || loading ? (
+        {checkingSession || (loading && !is2FAStep) ? (
           <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
             <div className="spinner" style={{ 
               width: '40px', 
@@ -134,6 +172,83 @@ const Login = () => {
               @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
             `}</style>
           </div>
+        ) : is2FAStep ? (
+          <>
+            <p style={{ 
+              textAlign: 'center', 
+              color: 'var(--text-muted)', 
+              marginBottom: '32px' 
+            }}>
+              Please enter the 6-digit code from your authenticator app to continue as Admin.
+            </p>
+
+            {error && (
+              <div style={{
+                padding: '12px',
+                background: 'rgba(225, 29, 72, 0.1)',
+                border: '1px solid var(--accent-rose)',
+                color: 'var(--accent-rose)',
+                borderRadius: '12px',
+                marginBottom: '20px',
+                fontSize: '0.9rem',
+                textAlign: 'center'
+              }}>
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handle2FASubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Authenticator Code</label>
+                <input
+                  type="text"
+                  placeholder="000000"
+                  required
+                  autoFocus
+                  maxLength={6}
+                  value={twoFactorCode}
+                  onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
+                  style={{
+                    textAlign: 'center',
+                    fontSize: '1.5rem',
+                    letterSpacing: '0.5em',
+                    padding: '16px'
+                  }}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || twoFactorCode.length !== 6}
+                style={{
+                  background: 'var(--primary)',
+                  color: 'white',
+                  padding: '14px',
+                  borderRadius: '12px',
+                  fontWeight: 'bold',
+                  fontSize: '1rem',
+                  marginTop: '10px',
+                  opacity: (loading || twoFactorCode.length !== 6) ? 0.6 : 1
+                }}
+              >
+                {loading ? 'Verifying...' : 'Verify & Login'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIs2FAStep(false)}
+                style={{
+                  background: 'transparent',
+                  color: 'var(--text-muted)',
+                  border: 'none',
+                  fontSize: '0.9rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Back to Login
+              </button>
+            </form>
+          </>
         ) : (
           <>
             <p style={{ 
