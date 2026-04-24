@@ -253,7 +253,11 @@ const Dashboard = () => {
                 border: '1px solid var(--glass-border)',
                 transition: 'all 0.3s'
               }}>
-                <div style={{ textAlign: 'right' }}>
+                <div 
+                  onClick={() => navigate('/profile')}
+                  style={{ textAlign: 'right', cursor: 'pointer' }}
+                  title="View Profile"
+                >
                   <p style={{ fontSize: '0.9rem', fontWeight: '800', margin: 0, color: 'white', letterSpacing: '0.02em' }}>
                     {user.name || user.email.split('@')[0]}
                   </p>

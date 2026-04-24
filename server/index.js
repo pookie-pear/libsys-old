@@ -77,6 +77,23 @@ const checkDB = (req, res, next) => {
   });
 };
 
+// Helper to create a session and generate token
+const createSessionAndToken = async (user, req) => {
+  const session = await Session.create({
+    userId: user._id,
+    userAgent: req.headers['user-agent'],
+    ip: req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+  });
+
+  const token = generateToken({ 
+    id: user._id, 
+    email: user.email,
+    sessionId: session._id 
+  }, process.env.JWT_SECRET);
+
+  return { token, session };
+};
+
 // Custom Protect Middleware that checks both Authorization header and unil_session cookie
 const protectWithCookie = (secret) => async (req, res, next) => {
   let token;
@@ -107,6 +124,18 @@ const protectWithCookie = (secret) => async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, secret);
+    
+    // Check if session is still valid in DB
+    if (decoded.sessionId) {
+      const session = await Session.findById(decoded.sessionId);
+      if (!session || !session.isValid) {
+        return res.status(401).json({ success: false, message: 'Session has been revoked or expired' });
+      }
+      // Update last active
+      session.lastActive = new Date();
+      await session.save();
+    }
+
     req.user = decoded;
     req.isAdmin = decoded.email === process.env.ADMIN_EMAIL;
     next();
@@ -160,6 +189,16 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true }
 }, { timestamps: true });
 const User = userConn ? userConn.model('User', userSchema) : mongoose.model('User', userSchema);
+
+// Session Schema & Model for device/session control
+const sessionSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userAgent: String,
+  ip: String,
+  lastActive: { type: Date, default: Date.now },
+  isValid: { type: Boolean, default: true }
+}, { timestamps: true });
+const Session = userConn ? userConn.model('Session', sessionSchema) : mongoose.model('Session', sessionSchema);
 
 // Media Schema & Model (Movies/YouTube/etc)
 const mediaSchema = new mongoose.Schema({
@@ -225,7 +264,7 @@ app.post('/api/auth/register', checkDB, async (req, res, next) => {
     const hashedPassword = await hashPassword(password);
     const user = await User.create({ name, email, password: hashedPassword });
 
-    const token = generateToken({ id: user._id, email: user.email }, process.env.JWT_SECRET);
+    const { token } = await createSessionAndToken(user, req);
     res.cookie('unil_session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -256,7 +295,7 @@ app.post('/api/auth/login', checkDB, async (req, res, next) => {
         return successResponse(res, 200, { twoFactorRequired: true, email: user.email }, 'Admin credentials verified. 2FA code required.');
       }
 
-      const token = generateToken({ id: user._id, email: user.email }, process.env.JWT_SECRET);
+      const { token } = await createSessionAndToken(user, req);
       res.cookie('unil_session', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -279,7 +318,7 @@ app.post('/api/auth/login', checkDB, async (req, res, next) => {
       return successResponse(res, 200, { twoFactorRequired: true, email: user.email }, 'Admin credentials verified. 2FA code required.');
     }
 
-    const token = generateToken({ id: user._id, email: user.email }, process.env.JWT_SECRET);
+    const { token } = await createSessionAndToken(user, req);
     res.cookie('unil_session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -314,7 +353,7 @@ app.post('/api/auth/verify-sso', checkDB, async (req, res, next) => {
       return successResponse(res, 200, { twoFactorRequired: true, email: user.email }, 'SSO Login verified. 2FA code required.');
     }
 
-    const token = generateToken({ id: user._id, email: user.email }, process.env.JWT_SECRET);
+    const { token } = await createSessionAndToken(user, req);
     res.cookie('unil_session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -338,9 +377,112 @@ app.get('/api/auth/me', [checkDB, auth], async (req, res) => {
     }
 });
 
-app.post('/api/auth/logout', (req, res) => {
-  res.clearCookie('unil_session');
-  return successResponse(res, 200, null, 'Logged out successfully');
+app.post('/api/auth/logout', [checkDB, auth], async (req, res) => {
+  try {
+    if (req.user && req.user.sessionId) {
+      await Session.findByIdAndDelete(req.user.sessionId);
+    }
+    res.clearCookie('unil_session');
+    return successResponse(res, 200, null, 'Logged out successfully');
+  } catch (error) {
+    res.clearCookie('unil_session');
+    return successResponse(res, 200, null, 'Logged out with errors');
+  }
+});
+
+// --- Profile & Session Management ---
+
+app.put('/api/auth/profile', [checkDB, auth], async (req, res) => {
+    const { name, email } = req.body;
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return errorResponse(res, 404, 'User not found');
+
+        if (email && email !== user.email) {
+            const emailExists = await User.findOne({ email });
+            if (emailExists) return errorResponse(res, 400, 'Email already in use');
+            user.email = email;
+        }
+
+        if (name) user.name = name;
+        await user.save();
+
+        return successResponse(res, 200, { user: { id: user._id, name: user.name, email: user.email } }, 'Profile updated successfully');
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to update profile');
+    }
+});
+
+app.put('/api/auth/change-password', [checkDB, auth], async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return errorResponse(res, 404, 'User not found');
+
+        // Check if it's the admin from env
+        if (user.email === process.env.ADMIN_EMAIL) {
+            return errorResponse(res, 403, 'Master admin password must be changed in .env file');
+        }
+
+        const isMatch = await comparePassword(currentPassword, user.password);
+        if (!isMatch) return errorResponse(res, 401, 'Current password incorrect');
+
+        user.password = await hashPassword(newPassword);
+        await user.save();
+
+        // Invalidate ALL OTHER sessions for this user
+        await Session.deleteMany({ 
+            userId: user._id, 
+            _id: { $ne: req.user.sessionId } 
+        });
+
+        return successResponse(res, 200, null, 'Password updated. All other devices logged out.');
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to update password');
+    }
+});
+
+app.get('/api/auth/sessions', [checkDB, auth], async (req, res) => {
+    try {
+        const sessions = await Session.find({ userId: req.user.id }).sort({ lastActive: -1 });
+        return successResponse(res, 200, sessions.map(s => ({
+            id: s._id,
+            userAgent: s.userAgent,
+            ip: s.ip,
+            lastActive: s.lastActive,
+            isCurrent: s._id.toString() === req.user.sessionId
+        })), 'Sessions retrieved');
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to retrieve sessions');
+    }
+});
+
+app.delete('/api/auth/sessions/:id', [checkDB, auth], async (req, res) => {
+    try {
+        const session = await Session.findOne({ _id: req.params.id, userId: req.user.id });
+        if (!session) return errorResponse(res, 404, 'Session not found');
+        
+        if (session._id.toString() === req.user.sessionId) {
+            return errorResponse(res, 400, 'Cannot revoke current session via this endpoint. Use /logout instead.');
+        }
+
+        await session.deleteOne();
+        return successResponse(res, 200, null, 'Session revoked');
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to revoke session');
+    }
+});
+
+app.delete('/api/auth/sessions', [checkDB, auth], async (req, res) => {
+    try {
+        await Session.deleteMany({ 
+            userId: req.user.id, 
+            _id: { $ne: req.user.sessionId } 
+        });
+        return successResponse(res, 200, null, 'All other sessions revoked');
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to revoke other sessions');
+    }
 });
 
 // --- 2FA Endpoints ---
@@ -364,7 +506,7 @@ app.post('/api/auth/verify-2fa', checkDB, async (req, res) => {
         const user = await User.findOne({ email });
         if (!user) return errorResponse(res, 404, 'Admin user not found');
 
-        const token = generateToken({ id: user._id, email: user.email }, process.env.JWT_SECRET);
+        const { token } = await createSessionAndToken(user, req);
         res.cookie('unil_session', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',

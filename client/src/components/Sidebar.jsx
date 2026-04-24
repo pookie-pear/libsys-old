@@ -9,12 +9,15 @@ import {
   PlusCircle,
   Gamepad2,
   LogOut,
-  User
+  User,
+  Settings
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Sidebar = ({ filter, setFilter, onAddClick }) => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const navItems = [
     { id: 'all', label: 'All Media', icon: Library },
     { id: 'book', label: 'Books', icon: BookOpen },
@@ -101,6 +104,27 @@ const Sidebar = ({ filter, setFilter, onAddClick }) => {
               Add Media
             </button>
          )}
+
+         <button
+            onClick={() => navigate('/profile')}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px 16px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              color: 'var(--text-main)',
+              fontSize: '1rem',
+              fontWeight: '500',
+              borderRadius: '12px',
+              border: '1px solid var(--glass-border)',
+              cursor: 'pointer'
+            }}
+          >
+            <Settings size={20} />
+            Profile Settings
+          </button>
       </div>
     </aside>
   );
