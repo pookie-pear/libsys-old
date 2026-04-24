@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, BookOpen, Film, Tv, Video, MonitorPlay, Trash2, Edit2, Copy, Check, ExternalLink, Gamepad2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Skeleton from './Skeleton';
 
 const typeIcons = {
   book: <BookOpen size={16} />,
@@ -31,6 +32,16 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
   const { user } = useAuth();
   const { title, type, genres, rating, review, image, category, author, year, pageCount, description, link } = item;
   const [copied, setCopied] = useState(false);
+  const [imgLoading, setImgLoading] = useState(true);
+
+  // Reset loading state when image URL changes
+  useEffect(() => {
+    if (image) {
+      setImgLoading(true);
+    } else {
+      setImgLoading(false);
+    }
+  }, [image]);
   
   const TypeIcon = typeIcons[type] || <Film size={16} />;
   const color = typeColors[type] || 'var(--primary)';
@@ -111,16 +122,30 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
             ></iframe>
           </div>
         ) : image ? (
-          <img 
-            src={image} 
-            alt={title} 
-            loading="lazy"
-            style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'cover' }} 
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
-            }}
-          />
+          <div style={{ position: 'relative', width: '100%' }}>
+            {imgLoading && <Skeleton height="350px" borderRadius="0" />}
+            <img 
+              src={image} 
+              alt={title} 
+              onLoad={() => setImgLoading(false)}
+              onError={(e) => {
+                setImgLoading(false);
+                e.target.style.display = 'none';
+                if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+              }}
+              style={{ 
+                width: '100%', 
+                height: 'auto', 
+                display: 'block',
+                objectFit: 'cover',
+                opacity: imgLoading ? 0 : 1,
+                position: imgLoading ? 'absolute' : 'static',
+                top: 0,
+                left: 0,
+                transition: 'opacity 0.3s ease'
+              }} 
+            />
+          </div>
         ) : null}
         
         {/* Placeholder if no image, no video, or image error */}

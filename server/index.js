@@ -339,8 +339,35 @@ app.post('/api/auth/logout', (req, res) => {
 
 app.get('/api/media', async (req, res) => {
     try {
-        const media = await Media.find().sort({ createdAt: -1 });
-        res.json(media.map(m => ({ ...m._doc, id: m._id })));
+        const { page = 1, limit = 30, type, category, search, minRating } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const query = {};
+        if (type && type !== 'all') query.type = type;
+        if (category && category !== 'all') query.category = category;
+        if (minRating) query.rating = { $gte: parseInt(minRating) };
+        if (search) {
+            query.$or = [
+                { title: { $regex: search, $options: 'i' } },
+                { genres: { $in: [new RegExp(search, 'i')] } }
+            ];
+        }
+
+        const totalItems = await Media.countDocuments(query);
+        const media = await Media.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        res.json({
+            items: media.map(m => ({ ...m._doc, id: m._id })),
+            pagination: {
+                totalItems,
+                totalPages: Math.ceil(totalItems / parseInt(limit)),
+                currentPage: parseInt(page),
+                limit: parseInt(limit)
+            }
+        });
     } catch (err) {
         res.status(500).json({ message: 'Server error' });
     }
@@ -406,9 +433,26 @@ app.delete('/api/media/:id', auth, adminOnly, async (req, res) => {
 
 app.get('/api/irl-books', async (req, res) => {
     try {
-        const books = await IrlBook.find().sort({ createdAt: -1 });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 30;
+        const skip = (page - 1) * limit;
+
+        const totalItems = await IrlBook.countDocuments();
+        const books = await IrlBook.find()
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
         const formattedBooks = books.map(b => ({ ...b._doc, id: b._id }));
-        res.json(formattedBooks);
+        res.json({
+            items: formattedBooks,
+            pagination: {
+                totalItems,
+                totalPages: Math.ceil(totalItems / limit),
+                currentPage: page,
+                limit
+            }
+        });
     } catch (err) {
         res.status(500).json({ message: 'Error fetching books' });
     }

@@ -1,14 +1,15 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star, LogIn, User, LogOut, RefreshCcw } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import MediaGrid from '../components/MediaGrid';
 import AddMediaModal from '../components/AddMediaModal';
+import Pagination from '../components/Pagination';
 import { useLibrary } from '../hooks/useLibrary';
 import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
-  const { library, loading, error, addMedia, updateMedia, deleteMedia, refreshLibrary } = useLibrary();
+  const { library, pagination, loading, error, addMedia, updateMedia, deleteMedia, refreshLibrary } = useLibrary();
   const { user, logout } = useAuth();
   const [filter, setFilter] = useState('all'); 
   const [statusFilter, setStatusFilter] = useState('all'); // all, completed, in_progress, wishlist
@@ -18,10 +19,26 @@ const Dashboard = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigate = useNavigate();
+
+  // Handle page change and filters
+  useEffect(() => {
+    refreshLibrary(currentPage, 30, {
+      type: filter,
+      category: statusFilter,
+      minRating: ratingFilter,
+      search: searchQuery
+    });
+  }, [currentPage, filter, statusFilter, ratingFilter, searchQuery]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter, statusFilter, ratingFilter, searchQuery]);
 
   // Poll for sync progress
   React.useEffect(() => {
@@ -69,16 +86,6 @@ const Dashboard = () => {
       setIsSyncing(false);
     }
   };
-
-  const filteredLibrary = useMemo(() => {
-    return library
-      .filter(item => filter === 'all' || item.type === filter)
-      .filter(item => statusFilter === 'all' || item.category === statusFilter)
-      .filter(item => item.rating >= ratingFilter)
-      .filter(item => item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                      (item.genres && item.genres.some(g => g.toLowerCase().includes(searchQuery.toLowerCase()))))
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [library, filter, statusFilter, ratingFilter, searchQuery]);
 
   const handleAddClick = () => {
     if (!user) {
@@ -184,7 +191,7 @@ const Dashboard = () => {
               {filter === 'all' ? 'Your Library' : filter.charAt(0).toUpperCase() + filter.slice(1) + 's'}
             </h1>
             <p style={{ color: 'var(--text-muted)' }}>
-              {filteredLibrary.length} item{filteredLibrary.length !== 1 ? 's' : ''} found
+              {pagination?.totalItems || 0} item{pagination?.totalItems !== 1 ? 's' : ''} found
             </p>
           </div>
 
@@ -346,19 +353,17 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {loading ? (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: '40px', height: '40px', border: '4px solid var(--primary)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-            <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
-          </div>
-        ) : error ? (
-          <div style={{ color: 'var(--accent-rose)', textAlign: 'center', padding: '40px' }}>
-            <h3>Error loading library</h3>
-            <p>{error}</p>
-          </div>
-        ) : (
-          <MediaGrid items={filteredLibrary} onDelete={deleteMedia} onEdit={handleEditClick} />
-        )}
+        <MediaGrid 
+          items={library} 
+          loading={loading}
+          onDelete={deleteMedia} 
+          onEdit={handleEditClick} 
+        />
+
+        <Pagination 
+          pagination={pagination} 
+          onPageChange={setCurrentPage} 
+        />
       </main>
 
       <AddMediaModal 

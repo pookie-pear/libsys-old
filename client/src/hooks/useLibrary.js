@@ -4,20 +4,35 @@ const API_URL = '/api/media';
 
 export function useLibrary() {
   const [library, setLibrary] = useState([]);
+  const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchLibrary = async () => {
+  const fetchLibrary = async (page = 1, limit = 30, filters = {}) => {
     try {
       setLoading(true);
-      const res = await fetch(API_URL, {
+      const queryParams = new URLSearchParams({
+        page,
+        limit,
+        ...filters
+      });
+      
+      const res = await fetch(`${API_URL}?${queryParams.toString()}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
-      setLibrary(data);
+      
+      // Handle both old and new API format
+      if (data.items && data.pagination) {
+        setLibrary(data.items);
+        setPagination(data.pagination);
+      } else {
+        setLibrary(data);
+        setPagination(null);
+      }
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -46,8 +61,8 @@ export function useLibrary() {
         credentials: 'include' // Important for cookie-based SSO
       });
       if (!res.ok) throw new Error('Failed to add media');
-      const newMedia = await res.json();
-      setLibrary([...library, newMedia]);
+      // After adding, we should ideally refresh to get correct pagination
+      fetchLibrary(1, 30); 
       return true;
     } catch (err) {
       setError(err.message);
@@ -67,8 +82,12 @@ export function useLibrary() {
         credentials: 'include' // Important for cookie-based SSO
       });
       if (!res.ok) throw new Error('Failed to update media');
-      const updatedMedia = await res.json();
-      setLibrary(library.map(item => item.id === id ? updatedMedia : item));
+      // Refresh current page
+      if (pagination) {
+        fetchLibrary(pagination.currentPage, pagination.limit);
+      } else {
+        fetchLibrary();
+      }
       return true;
     } catch (err) {
       setError(err.message);
@@ -86,7 +105,12 @@ export function useLibrary() {
         credentials: 'include' // Important for cookie-based SSO
       });
       if (!res.ok) throw new Error('Failed to delete media');
-      setLibrary(library.filter(item => item.id !== id));
+      // Refresh current page
+      if (pagination) {
+        fetchLibrary(pagination.currentPage, pagination.limit);
+      } else {
+        fetchLibrary();
+      }
       return true;
     } catch (err) {
       setError(err.message);
@@ -98,6 +122,7 @@ export function useLibrary() {
 
   return {
     library,
+    pagination,
     loading,
     error,
     addMedia,

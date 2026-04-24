@@ -124,3 +124,48 @@ input:focus, textarea:focus {
   }
 }
 
+/* Skeleton Pulse Animation */
+@keyframes skeleton-pulse {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.mb-8 { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.mb-16 { margin-bottom: 16px; }
+.mt-24 { margin-top: 24px; }
+
+/* Masonry Grid */
+.masonry-grid {
+  column-count: auto;
+  column-width: 280px;
+  column-gap: 24px;
+  padding: 24px 0;
+  width: 100%;
+}
+
+/* Card Hover Actions */
+.glass-card:hover .action-btns {
+  opacity: 1 !important;
+  transform: translateY(0);
+}
+
+.action-btns {
+  transform: translateY(-10px);
+}
+
+.spin-anim {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+
+

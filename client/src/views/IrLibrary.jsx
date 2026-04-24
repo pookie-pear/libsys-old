@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Book, User, Calendar, PlusCircle, Trash2, CheckCircle, Shield, ShoppingCart, LogIn, LogOut, X, RefreshCcw } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Pagination from '../components/Pagination';
+import Skeleton from '../components/Skeleton';
 
 const API_URL = '/api/irl-books';
 
@@ -9,6 +11,8 @@ const IrLibrary = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [books, setBooks] = useState([]);
+  const [pagination, setPagination] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminTab, setAdminTab] = useState('inventory'); // 'inventory' or 'loans'
@@ -39,7 +43,7 @@ const IrLibrary = () => {
       const data = await res.json();
       if (data.success) {
         alert('Sync completed successfully!');
-        fetchBooks();
+        fetchBooks(currentPage);
       } else {
         alert('Sync failed: ' + data.message);
       }
@@ -50,15 +54,22 @@ const IrLibrary = () => {
     }
   };
 
-  const fetchBooks = async () => {
+  const fetchBooks = async (page = 1) => {
     try {
-      const res = await fetch(API_URL, {
+      setLoading(true);
+      const res = await fetch(`${API_URL}?page=${page}&limit=30`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
       const data = await res.json();
-      setBooks(Array.isArray(data) ? data : []);
+      if (data.items && data.pagination) {
+        setBooks(data.items);
+        setPagination(data.pagination);
+      } else {
+        setBooks(Array.isArray(data) ? data : []);
+        setPagination(null);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -67,8 +78,8 @@ const IrLibrary = () => {
   };
 
   useEffect(() => {
-    fetchBooks();
-  }, []);
+    fetchBooks(currentPage);
+  }, [currentPage]);
 
   const handleAddBook = async (e) => {
     e.preventDefault();
@@ -98,8 +109,8 @@ const IrLibrary = () => {
           isbn: newIsbn
         })
       });
-      const data = await res.json();
-      setBooks([...books, data]);
+      await res.json();
+      fetchBooks(currentPage);
       setNewTitle('');
       setNewAuthor('');
       setNewCopies(1);
@@ -124,7 +135,7 @@ const IrLibrary = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-      setBooks(books.filter(b => b.id !== id));
+      fetchBooks(currentPage);
     } catch (err) {
       console.error(err);
     }
@@ -152,8 +163,8 @@ const IrLibrary = () => {
         },
         body: JSON.stringify(updatedBookData)
       });
-      const updated = await res.json();
-      setBooks(books.map(b => b.id === bookId ? updated : b));
+      await res.json();
+      fetchBooks(currentPage);
     } catch (err) {
       console.error(err);
     }
@@ -206,8 +217,8 @@ const IrLibrary = () => {
         },
         body: JSON.stringify(updatedBookData)
       });
-      const updated = await res.json();
-      setBooks(books.map(b => b.id === checkoutBookId ? updated : b));
+      await res.json();
+      fetchBooks(currentPage);
       setIsCheckoutModalOpen(false);
     } catch (err) {
       console.error(err);
@@ -439,7 +450,15 @@ const IrLibrary = () => {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="5" style={{ textAlign: 'center', padding: '40px' }}>Loading inventory...</td></tr>
+                  [...Array(5)].map((_, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <td style={{ padding: '16px' }}><Skeleton width="150px" height="20px" /></td>
+                      <td style={{ padding: '16px' }}><Skeleton width="100px" height="20px" /></td>
+                      <td style={{ padding: '16px' }}><Skeleton width="50px" height="20px" /></td>
+                      <td style={{ padding: '16px' }}><Skeleton width="80px" height="24px" borderRadius="4px" /></td>
+                      <td style={{ padding: '16px', textAlign: 'right' }}><Skeleton width="120px" height="32px" borderRadius="8px" /></td>
+                    </tr>
+                  ))
                 ) : books.length === 0 ? (
                   <tr><td colSpan="5" style={{ textAlign: 'center', padding: '40px' }}>No books found in inventory.</td></tr>
                 ) : (
@@ -485,6 +504,11 @@ const IrLibrary = () => {
               </tbody>
             </table>
           </section>
+
+          <Pagination 
+            pagination={pagination} 
+            onPageChange={setCurrentPage} 
+          />
         </>
       ) : (
         /* Loans View */

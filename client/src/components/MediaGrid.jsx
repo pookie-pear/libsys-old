@@ -1,7 +1,24 @@
 import React from 'react';
 import MediaCard from './MediaCard';
+import { MediaCardSkeleton } from './Skeleton';
 
-const MediaGrid = ({ items, onDelete, onEdit }) => {
+const MediaGrid = ({ items, loading, onDelete, onEdit }) => {
+  if (loading) {
+    return (
+      <div className="masonry-grid" style={{
+        columnCount: 'auto',
+        columnWidth: '280px',
+        columnGap: '24px',
+        padding: '24px 0',
+        width: '100%'
+      }}>
+        {[...Array(8)].map((_, i) => (
+          <MediaCardSkeleton key={i} />
+        ))}
+      </div>
+    );
+  }
+
   if (!items || items.length === 0) {
     return (
       <div style={{
