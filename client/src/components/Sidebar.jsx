@@ -35,7 +35,7 @@ const Sidebar = ({ filter, setFilter, onAddClick }) => {
         <div style={{ background: 'var(--primary)', padding: '8px', borderRadius: '12px' }}>
           <Library size={24} color="white" />
         </div>
-        <h2 style={{ fontSize: '1.5rem', color: 'white' }}>OmniShelf</h2>
+        <h2 style={{ fontSize: '1.5rem', color: 'white' }}>LibSys</h2>
       </div>
 
       <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

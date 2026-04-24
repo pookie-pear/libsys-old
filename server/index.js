@@ -647,7 +647,7 @@ app.post('/api/auth/verify-2fa', checkDB, async (req, res) => {
 app.get('/api/admin/setup-2fa', [checkDB, auth, adminOnly], async (req, res) => {
     if (!authenticator) return res.status(500).json({ success: false, message: 'TOTP Library failed to load' });
     const secret = process.env.ADMIN_2FA_SECRET || authenticator.generateSecret();
-    const otpauth = authenticator.keyuri(process.env.ADMIN_EMAIL, 'LibraryShelf', secret);
+    const otpauth = authenticator.keyuri(process.env.ADMIN_EMAIL, 'LibSys', secret);
     
     try {
         const QRCode = require('qrcode');
