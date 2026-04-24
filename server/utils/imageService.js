@@ -38,15 +38,27 @@ async function searchImage(title, type) {
         }
     ];
 
-    const query = `${title} ${type} official poster`;
+    const keywordMap = {
+        'game': ['game box art cover', 'game cover art', 'video game poster'],
+        'book': ['book cover', 'novel cover art'],
+        'movie': ['movie poster', 'film poster official'],
+        'series': ['tv series poster', 'tv show poster'],
+        'short': ['short film poster', 'short movie poster'],
+        'youtube': ['youtube thumbnail', 'video thumbnail']
+    };
+
+    const typeKeywords = keywordMap[type] || [`${type} official poster`];
     
     for (const engine of engines) {
-        try {
-            const result = await engine(query);
-            if (result) return result;
-            await sleep(1000 + Math.random() * 2000); // Random delay between retries
-        } catch (error) {
-            console.error(`Search engine error: ${error.message}`);
+        for (const keyword of typeKeywords) {
+            const query = `${title} ${keyword}`;
+            try {
+                const result = await engine(query);
+                if (result) return result;
+                await sleep(500 + Math.random() * 500); // Shorter delay between keyword retries
+            } catch (error) {
+                console.error(`Search engine error for query "${query}": ${error.message}`);
+            }
         }
     }
     return null;
