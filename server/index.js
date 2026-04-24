@@ -200,6 +200,16 @@ const sessionSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Session = userConn ? userConn.model('Session', sessionSchema) : mongoose.model('Session', sessionSchema);
 
+// Personal Wishlist Schema
+const wishlistSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  title: { type: String, required: true },
+  type: String,
+  note: String,
+  addedAt: { type: Date, default: Date.now }
+}, { timestamps: true });
+const Wishlist = userConn ? userConn.model('Wishlist', wishlistSchema) : mongoose.model('Wishlist', wishlistSchema);
+
 // Media Schema & Model (Movies/YouTube/etc)
 const mediaSchema = new mongoose.Schema({
     title: { type: String, required: true },
@@ -482,6 +492,101 @@ app.delete('/api/auth/sessions', [checkDB, auth], async (req, res) => {
         return successResponse(res, 200, null, 'All other sessions revoked');
     } catch (error) {
         return errorResponse(res, 500, 'Failed to revoke other sessions');
+    }
+});
+
+// --- Personal Wishlist Endpoints ---
+
+app.get('/api/wishlist', [checkDB, auth], async (req, res) => {
+    try {
+        const items = await Wishlist.find({ userId: req.user.id }).sort({ addedAt: -1 });
+        return successResponse(res, 200, items, 'Wishlist retrieved');
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to retrieve wishlist');
+    }
+});
+
+app.post('/api/wishlist', [checkDB, auth], async (req, res) => {
+    const { title, type, note } = req.body;
+    try {
+        const item = await Wishlist.create({
+            userId: req.user.id,
+            title,
+            type,
+            note
+        });
+        return successResponse(res, 201, item, 'Item added to wishlist');
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to add to wishlist');
+    }
+});
+
+app.delete('/api/wishlist/:id', [checkDB, auth], async (req, res) => {
+    try {
+        const item = await Wishlist.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+        if (!item) return errorResponse(res, 404, 'Item not found');
+        return successResponse(res, 200, null, 'Item removed from wishlist');
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to remove from wishlist');
+    }
+});
+
+// --- Admin User Management Endpoints ---
+
+app.get('/api/admin/users', [checkDB, auth, adminOnly], async (req, res) => {
+    try {
+        // Fetch all users
+        const users = await User.find().select('-password').sort({ createdAt: -1 });
+        
+        // Enhance with item counts for high-speed overview
+        const enhancedUsers = await Promise.all(users.map(async (user) => {
+            const wishlistCount = await Wishlist.countDocuments({ userId: user._id });
+            const sessionCount = await Session.countDocuments({ userId: user._id });
+            
+            // For general media, we don't have a userId link in the Media schema currently
+            // (since it's a shared library), but we can track their personal activity.
+            
+            return {
+                ...user._doc,
+                id: user._id,
+                wishlistCount,
+                sessionCount
+            };
+        }));
+
+        return successResponse(res, 200, enhancedUsers, 'Users retrieved successfully');
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to retrieve users');
+    }
+});
+
+app.delete('/api/admin/users/:id', [checkDB, auth, adminOnly], async (req, res) => {
+    try {
+        const userId = req.params.id;
+        
+        // Prevent self-deletion
+        if (userId === req.user.id) {
+            return errorResponse(res, 400, 'Cannot delete your own admin account');
+        }
+
+        // 1. Delete user
+        const user = await User.findByIdAndDelete(userId);
+        if (!user) return errorResponse(res, 404, 'User not found');
+
+        // 2. Cleanup all user data
+        await Wishlist.deleteMany({ userId });
+        await Session.deleteMany({ userId });
+        
+        // Note: We don't delete shared Media items as they belong to the library,
+        // but IRL book loans linked to this user should be cleared.
+        await IrlBook.updateMany(
+            { 'borrowers.userId': userId },
+            { $pull: { borrowers: { userId: userId } } }
+        );
+
+        return successResponse(res, 200, null, 'User and all associated data deleted successfully');
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to delete user');
     }
 });
 

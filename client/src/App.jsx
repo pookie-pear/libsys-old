@@ -4,6 +4,7 @@ import Dashboard from './views/Dashboard';
 import IrLibrary from './views/IrLibrary';
 import Login from './views/Login';
 import Profile from './views/Profile';
+import AdminUsers from './views/AdminUsers';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/library" element={<IrLibrary />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

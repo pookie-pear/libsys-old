@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Smartphone, LogOut, ArrowLeft, Save, ShieldCheck, Trash2 } from 'lucide-react';
+import { User, Mail, Lock, Smartphone, LogOut, ArrowLeft, Save, ShieldCheck, Trash2, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Profile = () => {
   const { user, logout, setUser } = useAuth();
   const navigate = useNavigate();
   const [sessions, setSessions] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
 
@@ -18,8 +19,36 @@ const Profile = () => {
     if (user) {
       setProfileForm({ name: user.name, email: user.email });
       fetchSessions();
+      fetchWishlist();
     }
   }, [user]);
+
+  const fetchWishlist = async () => {
+    try {
+      const res = await fetch('/api/wishlist', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      if (data.success) setWishlist(data.data);
+    } catch (err) {
+      console.error('Failed to fetch wishlist');
+    }
+  };
+
+  const removeFromWishlist = async (id) => {
+    try {
+      const res = await fetch(`/api/wishlist/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setWishlist(wishlist.filter(item => item._id !== id));
+      }
+    } catch (err) {
+      console.error('Failed to remove from wishlist');
+    }
+  };
 
   const fetchSessions = async () => {
     try {
@@ -238,6 +267,48 @@ const Profile = () => {
             )}
           </section>
         </div>
+
+        {/* Personal Wishlist Section */}
+        <section className="glass-card" style={{ padding: '24px', background: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+            <Heart size={24} color="var(--accent-rose)" fill="var(--accent-rose)" />
+            <h2 style={{ fontSize: '1.25rem' }}>Your Personal Wishlist</h2>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '8px' }}>
+              {wishlist.length} items
+            </span>
+          </div>
+
+          {wishlist.length === 0 ? (
+            <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>
+              Your wishlist is empty. Add items from the main library!
+            </p>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+              {wishlist.map(item => (
+                <div key={item._id} style={{ 
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+                  padding: '16px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid var(--glass-border)'
+                }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold', fontSize: '1rem', color: 'white' }}>{item.title}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                      {item.type.charAt(0).toUpperCase() + item.type.slice(1)} • Added {new Date(item.addedAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => removeFromWishlist(item._id)}
+                    style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '8px' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-rose)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
 
         {/* Sessions Management */}
         <section className="glass-card" style={{ padding: '24px', background: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>

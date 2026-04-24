@@ -10,7 +10,8 @@ import {
   Gamepad2,
   LogOut,
   User,
-  Settings
+  Settings,
+  Users
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -78,31 +79,57 @@ const Sidebar = ({ filter, setFilter, onAddClick }) => {
 
       <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '24px', borderTop: '1px solid var(--glass-border)' }}>
          {user?.isAdmin && (
-           <button
-              onClick={onAddClick}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '14px',
-                background: 'var(--primary)',
-                color: 'white',
-                fontSize: '1rem',
-                fontWeight: '600',
-                boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)'
-              }}
-               onMouseEnter={(e) => {
-                  e.target.style.background = 'var(--primary-hover)';
-              }}
-              onMouseLeave={(e) => {
-                  e.target.style.background = 'var(--primary)';
-              }}
-            >
-              <PlusCircle size={20} />
-              Add Media
-            </button>
+           <>
+             <button
+                onClick={onAddClick}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  padding: '14px',
+                  background: 'var(--primary)',
+                  color: 'white',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)',
+                  borderRadius: '12px',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+                 onMouseEnter={(e) => {
+                    e.target.style.background = 'var(--primary-hover)';
+                }}
+                onMouseLeave={(e) => {
+                    e.target.style.background = 'var(--primary)';
+                }}
+              >
+                <PlusCircle size={20} />
+                Add Media
+              </button>
+
+              <button
+                onClick={() => navigate('/admin/users')}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '12px 16px',
+                  background: 'rgba(34, 211, 238, 0.1)',
+                  color: 'var(--accent-cyan)',
+                  fontSize: '1rem',
+                  fontWeight: '500',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(34, 211, 238, 0.2)',
+                  cursor: 'pointer'
+                }}
+              >
+                <Users size={20} />
+                Manage Users
+              </button>
+           </>
          )}
 
          <button

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, BookOpen, Film, Tv, Video, MonitorPlay, Trash2, Edit2, Copy, Check, ExternalLink, Gamepad2 } from 'lucide-react';
+import { Star, BookOpen, Film, Tv, Video, MonitorPlay, Trash2, Edit2, Copy, Check, ExternalLink, Gamepad2, Heart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Skeleton from './Skeleton';
 
@@ -33,6 +33,7 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
   const { title, type, genres, rating, review, image, category, author, year, pageCount, description, link } = item;
   const [copied, setCopied] = useState(false);
   const [imgLoading, setImgLoading] = useState(true);
+  const [wishlistAdded, setWishlistAdded] = useState(false);
 
   // Reset loading state when image URL changes
   useEffect(() => {
@@ -42,6 +43,27 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
       setImgLoading(false);
     }
   }, [image]);
+
+  const handleAddToWishlist = async () => {
+    if (!user) return alert('Please login to add items to your wishlist');
+    try {
+      const res = await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ title, type, note: `Added from ${type} library` })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setWishlistAdded(true);
+        setTimeout(() => setWishlistAdded(false), 2000);
+      }
+    } catch (err) {
+      console.error('Failed to add to wishlist');
+    }
+  };
   
   const TypeIcon = typeIcons[type] || <Film size={16} />;
   const color = typeColors[type] || 'var(--primary)';
@@ -59,21 +81,55 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
       breakInside: 'avoid', // Prevent card from splitting across columns
     }}>
       {/* Action Buttons (visible on hover) */}
-      {user?.isAdmin && (
-        <div 
-          className="action-btns"
-          style={{
-            position: 'absolute',
-            top: '12px',
-            right: '12px',
-            display: 'flex',
-            gap: '8px',
-            zIndex: 10,
-            opacity: 0,
-            transition: 'all 0.2s',
-          }}>
+      <div 
+        className="action-btns"
+        style={{
+          position: 'absolute',
+          top: '12px',
+          right: '12px',
+          display: 'flex',
+          gap: '8px',
+          zIndex: 10,
+          opacity: 0,
+          transition: 'all 0.2s',
+        }}>
+        {!user?.isAdmin && user && (
           <button 
-            onClick={() => onEdit(item)}
+            onClick={handleAddToWishlist}
+            style={{
+              background: wishlistAdded ? 'var(--primary)' : 'rgba(0, 0, 0, 0.6)',
+              color: 'white',
+              padding: '8px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            title="Add to Personal Wishlist"
+          >
+            <Heart size={16} fill={wishlistAdded ? "white" : "none"} />
+          </button>
+        )}
+        
+        {user?.isAdmin && (
+          <>
+            <button 
+              onClick={handleAddToWishlist}
+              style={{
+                background: wishlistAdded ? 'var(--primary)' : 'rgba(0, 0, 0, 0.6)',
+                color: 'white',
+                padding: '8px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              title="Add to Personal Wishlist"
+            >
+              <Heart size={16} fill={wishlistAdded ? "white" : "none"} />
+            </button>
+            <button 
+              onClick={() => onEdit(item)}
             style={{
               background: 'rgba(0, 0, 0, 0.6)',
               color: 'var(--text-muted)',
@@ -90,23 +146,24 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
           </button>
 
           <button 
-            onClick={() => onDelete(item.id)}
-            style={{
-              background: 'rgba(0, 0, 0, 0.6)',
-              color: 'var(--text-muted)',
-              padding: '8px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-rose)'}
-            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      )}
+              onClick={() => onDelete(item.id)}
+              style={{
+                background: 'rgba(0, 0, 0, 0.6)',
+                color: 'var(--text-muted)',
+                padding: '8px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-rose)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+            >
+              <Trash2 size={16} />
+            </button>
+          </>
+        )}
+      </div>
 
       {/* Image / Video Area */}
       <div style={{ width: '100%', position: 'relative', backgroundColor: 'var(--bg-dark)', minHeight: '150px' }}>
