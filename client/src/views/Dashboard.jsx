@@ -5,6 +5,7 @@ import Sidebar from '../components/Sidebar';
 import MediaGrid from '../components/MediaGrid';
 import AddMediaModal from '../components/AddMediaModal';
 import Pagination from '../components/Pagination';
+import NotificationBell from '../components/NotificationBell';
 import { useLibrary } from '../hooks/useLibrary';
 import { useAuth } from '../context/AuthContext';
 
@@ -149,7 +150,8 @@ const Dashboard = () => {
           background: 'var(--bg-card)',
           backdropFilter: 'blur(12px)',
           border: '1px solid var(--glass-border)',
-          position: 'relative'
+          position: 'relative',
+          zIndex: 100 // Ensure header and its dropdowns (notifications) stay on top
         }}>
           {/* Progress Overlay */}
           {syncProgress && (
@@ -243,16 +245,18 @@ const Dashboard = () => {
             <div style={{ height: '30px', width: '1px', background: 'var(--glass-border)', margin: '0 8px' }}></div>
 
             {user ? (
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '12px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                padding: '6px 6px 6px 16px',
-                borderRadius: '16px',
-                border: '1px solid var(--glass-border)',
-                transition: 'all 0.3s'
-              }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <NotificationBell />
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '12px',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  padding: '6px 6px 6px 16px',
+                  borderRadius: '16px',
+                  border: '1px solid var(--glass-border)',
+                  transition: 'all 0.3s'
+                }}>
                 <div 
                   onClick={() => navigate('/profile')}
                   style={{ textAlign: 'right', cursor: 'pointer' }}
@@ -288,6 +292,7 @@ const Dashboard = () => {
                   <LogOut size={18} />
                 </button>
               </div>
+            </div>
             ) : (
               <button 
                 onClick={() => navigate('/login')}

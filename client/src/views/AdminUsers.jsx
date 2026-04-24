@@ -63,7 +63,7 @@ const AdminUsers = () => {
     <div className="layout-container" style={{ display: 'flex', minHeight: '100vh', padding: '24px', gap: '24px', maxWidth: '1400px', margin: '0 auto' }}>
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)', padding: '24px', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card)', padding: '24px', borderRadius: '16px', border: '1px solid var(--glass-border)', position: 'relative', zIndex: 100 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <button 
               onClick={() => navigate('/')}
@@ -148,7 +148,7 @@ const AdminUsers = () => {
                           <Calendar size={14} color="var(--text-muted)" />
                           Joined {new Date(u.createdAt).toLocaleDateString()}
                         </div>
-                        {u.email === process.env.ADMIN_EMAIL && (
+                        {u.isAdmin && (
                           <div style={{ fontSize: '0.7rem', color: 'var(--accent-cyan)', background: 'rgba(34, 211, 238, 0.1)', padding: '2px 8px', borderRadius: '4px', width: 'fit-content', fontWeight: 'bold' }}>
                             SUPER ADMIN
                           </div>
@@ -168,7 +168,7 @@ const AdminUsers = () => {
                       </div>
                     </td>
                     <td style={{ padding: '16px 24px', textAlign: 'right' }}>
-                      {u.email !== process.env.ADMIN_EMAIL && (
+                      {!u.isAdmin && (
                         <button 
                           onClick={() => deleteUser(u.id, u.name || u.email)}
                           style={{ background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.2)', color: 'var(--accent-rose)', padding: '8px 12px', borderRadius: '10px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}

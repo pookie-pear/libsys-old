@@ -206,9 +206,27 @@ const wishlistSchema = new mongoose.Schema({
   title: { type: String, required: true },
   type: String,
   note: String,
+  image: String,
+  rating: Number,
+  genres: [String],
+  description: String,
+  author: String,
+  year: String,
+  pageCount: Number,
+  link: String,
+  mediaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Media' },
   addedAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 const Wishlist = userConn ? userConn.model('Wishlist', wishlistSchema) : mongoose.model('Wishlist', wishlistSchema);
+
+// Notification Schema
+const notificationSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  type: { type: String, enum: ['info', 'success', 'warning', 'error'], default: 'info' },
+  addedAt: { type: Date, default: Date.now }
+}, { timestamps: true });
+const Notification = userConn ? userConn.model('Notification', notificationSchema) : mongoose.model('Notification', notificationSchema);
 
 // Media Schema & Model (Movies/YouTube/etc)
 const mediaSchema = new mongoose.Schema({
@@ -507,13 +525,10 @@ app.get('/api/wishlist', [checkDB, auth], async (req, res) => {
 });
 
 app.post('/api/wishlist', [checkDB, auth], async (req, res) => {
-    const { title, type, note } = req.body;
     try {
         const item = await Wishlist.create({
             userId: req.user.id,
-            title,
-            type,
-            note
+            ...req.body
         });
         return successResponse(res, 201, item, 'Item added to wishlist');
     } catch (error) {
@@ -542,15 +557,14 @@ app.get('/api/admin/users', [checkDB, auth, adminOnly], async (req, res) => {
         const enhancedUsers = await Promise.all(users.map(async (user) => {
             const wishlistCount = await Wishlist.countDocuments({ userId: user._id });
             const sessionCount = await Session.countDocuments({ userId: user._id });
-            
-            // For general media, we don't have a userId link in the Media schema currently
-            // (since it's a shared library), but we can track their personal activity.
+            const isAdmin = user.email === process.env.ADMIN_EMAIL;
             
             return {
                 ...user._doc,
                 id: user._id,
                 wishlistCount,
-                sessionCount
+                sessionCount,
+                isAdmin
             };
         }));
 
@@ -645,6 +659,46 @@ app.get('/api/admin/setup-2fa', [checkDB, auth, adminOnly], async (req, res) => 
         });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Failed to generate QR code' });
+    }
+});
+
+// --- Notification Endpoints ---
+
+app.get('/api/notifications', async (req, res) => {
+    try {
+        const notifications = await Notification.find().sort({ addedAt: -1 }).limit(20);
+        return successResponse(res, 200, notifications, 'Notifications retrieved');
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to retrieve notifications');
+    }
+});
+
+app.post('/api/notifications', [checkDB, auth, adminOnly], async (req, res) => {
+    const { title, message, type } = req.body;
+    try {
+        const notification = await Notification.create({ title, message, type });
+        return successResponse(res, 201, notification, 'Notification created');
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to create notification');
+    }
+});
+
+app.delete('/api/notifications/:id', [checkDB, auth, adminOnly], async (req, res) => {
+    try {
+        const notification = await Notification.findByIdAndDelete(req.params.id);
+        if (!notification) return errorResponse(res, 404, 'Notification not found');
+        return successResponse(res, 200, null, 'Notification deleted');
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to delete notification');
+    }
+});
+
+app.delete('/api/notifications', [checkDB, auth, adminOnly], async (req, res) => {
+    try {
+        await Notification.deleteMany({});
+        return successResponse(res, 200, null, 'All notifications cleared');
+    } catch (error) {
+        return errorResponse(res, 500, 'Failed to clear notifications');
     }
 });
 

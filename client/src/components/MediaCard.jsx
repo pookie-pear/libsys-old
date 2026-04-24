@@ -47,13 +47,20 @@ const MediaCard = ({ item, onDelete, onEdit }) => {
   const handleAddToWishlist = async () => {
     if (!user) return alert('Please login to add items to your wishlist');
     try {
+      const wishlistData = {
+        title, type, image, rating, genres, description, 
+        author, year, pageCount, link,
+        mediaId: item.id || item._id,
+        note: `Added from ${type} library`
+      };
+      
       const res = await fetch('/api/wishlist', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ title, type, note: `Added from ${type} library` })
+        body: JSON.stringify(wishlistData)
       });
       const data = await res.json();
       if (data.success) {

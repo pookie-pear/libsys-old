@@ -4,6 +4,7 @@ import { ArrowLeft, Book, User, Calendar, PlusCircle, Trash2, CheckCircle, Shiel
 import { useAuth } from '../context/AuthContext';
 import Pagination from '../components/Pagination';
 import Skeleton from '../components/Skeleton';
+import NotificationBell from '../components/NotificationBell';
 
 const API_URL = '/api/irl-books';
 
@@ -249,7 +250,7 @@ const IrLibrary = () => {
     <div style={{ minHeight: '100vh', padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
       
       {/* Header */}
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', position: 'relative', zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
           <button 
             onClick={() => navigate('/')}
@@ -285,15 +286,17 @@ const IrLibrary = () => {
           </button>
 
           {user ? (
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '12px',
-              background: 'rgba(255, 255, 255, 0.05)',
-              padding: '6px 6px 6px 16px',
-              borderRadius: '16px',
-              border: '1px solid var(--glass-border)',
-            }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <NotificationBell />
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '12px',
+                background: 'rgba(255, 255, 255, 0.05)',
+                padding: '6px 6px 6px 16px',
+                borderRadius: '16px',
+                border: '1px solid var(--glass-border)',
+              }}>
               <div 
                 onClick={() => navigate('/profile')}
                 style={{ textAlign: 'right', cursor: 'pointer' }}
@@ -370,6 +373,7 @@ const IrLibrary = () => {
                 <LogOut size={18} />
               </button>
             </div>
+          </div>
           ) : (
             <button 
               onClick={() => navigate('/login')}
