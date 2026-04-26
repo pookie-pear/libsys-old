@@ -5,6 +5,7 @@ import IrLibrary from './views/IrLibrary';
 import Login from './views/Login';
 import Profile from './views/Profile';
 import AdminUsers from './views/AdminUsers';
+import About from './views/About';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
           <Route path="/library" element={<IrLibrary />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/about" element={<About />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

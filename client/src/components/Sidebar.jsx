@@ -11,7 +11,8 @@ import {
   LogOut,
   User,
   Settings,
-  Users
+  Users,
+  Info
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -75,6 +76,7 @@ const Sidebar = ({ filter, setFilter, onAddClick }) => {
             </button>
           );
         })}
+
       </nav>
 
       <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '24px', borderTop: '1px solid var(--glass-border)' }}>
@@ -132,26 +134,35 @@ const Sidebar = ({ filter, setFilter, onAddClick }) => {
            </>
          )}
 
-         <button
-            onClick={() => navigate('/profile')}
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '12px 16px',
-              background: 'rgba(255, 255, 255, 0.05)',
-              color: 'var(--text-main)',
-              fontSize: '1rem',
-              fontWeight: '500',
-              borderRadius: '12px',
-              border: '1px solid var(--glass-border)',
-              cursor: 'pointer'
-            }}
-          >
-            <Settings size={20} />
-            Profile Settings
-          </button>
+        <button
+          onClick={() => navigate('/about')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '12px 16px',
+            background: 'rgba(236, 72, 153, 0.1)',
+            color: '#ec4899',
+            textAlign: 'left',
+            fontSize: '1rem',
+            fontWeight: '600',
+            borderRadius: '12px',
+            border: '1px solid rgba(236, 72, 153, 0.2)',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(236, 72, 153, 0.2)';
+            e.currentTarget.style.transform = 'translateX(4px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(236, 72, 153, 0.1)';
+            e.currentTarget.style.transform = 'translateX(0)';
+          }}
+        >
+          <Info size={20} />
+          About LibSys
+        </button>
       </div>
     </aside>
   );

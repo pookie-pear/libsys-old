@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   User, Mail, Lock, Smartphone, LogOut, ArrowLeft, Save, ShieldCheck, 
   Heart, Calendar, Search, Trash2, 
-  Library, BookOpen, Film, Tv, Gamepad2, Video, MonitorPlay
+  Library, BookOpen, Film, Tv, Gamepad2, Video, MonitorPlay, Info
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import MediaCard from '../components/MediaCard';
@@ -232,7 +232,37 @@ const Profile = () => {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <TabButton id="wishlist" label="My Wishlist" icon={Heart} />
-            <TabButton id="security" label="Security & Account" icon={ShieldCheck} />
+            <TabButton id="security" label="Security & Sessions" icon={ShieldCheck} />
+            
+            <button
+              onClick={() => navigate('/about')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '16px 20px',
+                width: '100%',
+                background: 'rgba(236, 72, 153, 0.1)',
+                color: '#ec4899',
+                border: '1px solid rgba(236, 72, 153, 0.2)',
+                borderRadius: '12px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                textAlign: 'left',
+                marginTop: '8px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(236, 72, 153, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(236, 72, 153, 0.1)';
+              }}
+            >
+              <Info size={20} />
+              About LibSys
+            </button>
           </div>
 
           <div style={{ marginTop: 'auto', paddingTop: '24px', borderTop: '1px solid var(--glass-border)' }}>

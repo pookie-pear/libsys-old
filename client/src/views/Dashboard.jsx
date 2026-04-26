@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, LogIn, User, LogOut, RefreshCcw } from 'lucide-react';
+import { Star, LogIn, User, LogOut, RefreshCcw, Settings } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import MediaGrid from '../components/MediaGrid';
 import AddMediaModal from '../components/AddMediaModal';
@@ -270,6 +270,27 @@ const Dashboard = () => {
                   </p>
                 </div>
                 <div style={{ width: '1px', height: '24px', background: 'var(--glass-border)', margin: '0 4px' }}></div>
+                <button 
+                  onClick={() => navigate('/profile')}
+                  title="Settings"
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: '40px', height: '40px', borderRadius: '12px', 
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    color: 'var(--text-main)', border: '1px solid var(--glass-border)',
+                    cursor: 'pointer', transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  <Settings size={18} />
+                </button>
                 <button 
                   onClick={logout}
                   title="Logout"

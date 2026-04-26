@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Book, User, Calendar, PlusCircle, Trash2, CheckCircle, Shield, ShoppingCart, LogIn, LogOut, X, RefreshCcw } from 'lucide-react';
+import { ArrowLeft, Book, User, Calendar, PlusCircle, Trash2, CheckCircle, Shield, ShoppingCart, LogIn, LogOut, X, RefreshCcw, Info, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Pagination from '../components/Pagination';
 import Skeleton from '../components/Skeleton';
@@ -266,6 +266,33 @@ const IrLibrary = () => {
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <button
+            onClick={() => navigate('/about')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 16px',
+              background: 'rgba(236, 72, 153, 0.1)',
+              color: '#ec4899',
+              borderRadius: '12px',
+              border: '1px solid rgba(236, 72, 153, 0.2)',
+              cursor: 'pointer',
+              fontWeight: '500',
+              fontSize: '0.9rem',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(236, 72, 153, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(236, 72, 153, 0.1)';
+            }}
+          >
+            <Info size={18} />
+            About
+          </button>
+
+          <button
             onClick={handleSync}
             disabled={isSyncing}
             title="Sync with local JSON data and fetch images"
@@ -357,6 +384,26 @@ const IrLibrary = () => {
               >
                 <Shield size={20} />
                 {isAdmin ? 'Exit Admin Mode' : 'Enter Admin Mode'}
+              </button>
+
+              <button 
+                onClick={() => navigate('/profile')}
+                title="Settings"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: '40px', height: '40px', borderRadius: '12px', 
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  color: 'var(--text-main)', border: '1px solid var(--glass-border)',
+                  cursor: 'pointer', transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                }}
+              >
+                <Settings size={18} />
               </button>
 
               <button 
