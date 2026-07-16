@@ -34,7 +34,7 @@ const About = () => {
           About LibSys
         </h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginBottom: '48px', lineHeight: '1.6' }}>
-          my personal media ecosystem. IF youre admin you can manage books, movies, games, and more in one unified interface. contant me if youre really into adding stuff to collections n shi. other than that feel free to add stuff to your own wishlist. (as long as youre logged in, and dont spam logins imma ban yall)<br>Copyright @Suvam Kumar 2026</p>
+          my personal media ecosystem. IF youre admin you can manage books, movies, games, and more in one unified interface. contant me if youre really into adding stuff to collections n shi. other than that feel free to add stuff to your own wishlist. (as long as youre logged in, and dont spam logins imma ban yall) <br> Copyright @Suvam Kumar 2026</p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
           <a 
