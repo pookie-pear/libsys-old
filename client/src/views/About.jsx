@@ -124,7 +124,7 @@ const About = () => {
         </div>
 
         <div style={{ marginTop: '64px', paddingTop: '32px', borderTop: '1px solid var(--glass-border)', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-          &copy; {new Date().getFullYear()} LibSys. All rights reserved.
+          &copy; {new Date().getFullYear()} LibSys.Sabret All rights reserved.
         </div>
       </div>
     </div>
